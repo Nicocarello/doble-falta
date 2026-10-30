@@ -19,7 +19,7 @@ jobs:
           node-version: '20'
 
       - name: Instalar dependencias
-        run: npm install
+        run: npm install --legacy-peer-deps
 
       - name: Ejecutar generador de noticias
         env:
