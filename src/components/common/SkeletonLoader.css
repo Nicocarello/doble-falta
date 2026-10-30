@@ -1,0 +1,109 @@
+@keyframes shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+.skeleton-base {
+  background-color: rgba(255, 255, 255, 0.05);
+  position: relative;
+  overflow: hidden;
+  border-radius: 4px;
+}
+
+.skeleton-base::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.08),
+    transparent
+  );
+  animation: shimmer 1.5s infinite;
+}
+
+.skeleton-league-block {
+  background: var(--bg-card, #111);
+  border-radius: 8px;
+  margin-bottom: 20px;
+  overflow: hidden;
+  border: 1px solid rgba(255,255,255,0.05);
+}
+
+.skeleton-league-title {
+  height: 18px;
+  width: 180px;
+  margin: 15px;
+}
+
+.skeleton-match-row {
+  display: flex;
+  padding: 15px;
+  border-top: 1px solid rgba(255,255,255,0.05);
+  gap: 15px;
+  align-items: center;
+}
+
+.skeleton-status {
+  width: 45px;
+  height: 20px;
+  border-radius: 4px;
+}
+
+.skeleton-players {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.skeleton-player-name {
+  width: 130px;
+  height: 16px;
+  border-radius: 4px;
+}
+
+.skeleton-scores {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  align-items: flex-end;
+}
+
+.skeleton-score-box {
+  width: 25px;
+  height: 16px;
+  border-radius: 4px;
+}
+
+.skeleton-ranking-row {
+  display: flex;
+  padding: 15px 5px;
+  border-bottom: 1px solid #222;
+  gap: 15px;
+  align-items: center;
+}
+
+.skeleton-rank {
+  width: 30px;
+  height: 18px;
+  border-radius: 4px;
+}
+
+.skeleton-ranking-player {
+  flex: 1;
+  height: 18px;
+  border-radius: 4px;
+  max-width: 200px;
+}
+
+.skeleton-ranking-points {
+  width: 50px;
+  height: 18px;
+  border-radius: 4px;
+  margin-left: auto;
+}

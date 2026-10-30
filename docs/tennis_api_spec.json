@@ -1,0 +1,730 @@
+{
+  "api_name": "API Tennis",
+  "version": "2.9.4",
+  "base_url": "https://api.api-tennis.com/tennis/",
+  "documentation_purpose": "Real-time tennis data API specification for LLM consumption.",
+  "authentication": {
+    "type": "API Key",
+    "param_name": "APIkey",
+    "required": true,
+    "description": "Authorization code generated from your API Tennis account."
+  },
+  "global_rules": {
+    "supported_http_methods": [
+      "GET",
+      "POST"
+    ],
+    "default_timezone": "Europe/Berlin",
+    "timezone_format_example": "America/New_York",
+    "parameter_conventions": {
+      "method": "Required on every request and selects the API endpoint.",
+      "APIkey": "Required on every request.",
+      "date_start": "Format YYYY-MM-DD.",
+      "date_stop": "Format YYYY-MM-DD."
+    },
+    "null_and_empty_values": [
+      "null",
+      "-",
+      ""
+    ],
+    "interpretation_rules": [
+      "Treat null, '-', and empty strings as missing data.",
+      "Preserve nested arrays such as pointbypoint and scores unless explicitly asked to flatten them.",
+      "Do not invent fields that are not present in the documentation.",
+      "Use the provided timezone parameter when present; otherwise assume the documented default timezone.",
+      "Identifiers such as event_key, tournament_key, player_key, and event_type_key should be treated as unique IDs in their respective domains."
+    ]
+  },
+  "entity_glossary": {
+    "event_type_key": "Unique identifier for a tournament/event type (for example ATP Singles).",
+    "tournament_key": "Unique identifier for a specific tournament.",
+    "event_key": "Unique identifier for a specific match or fixture.",
+    "player_key": "Unique identifier for a player."
+  },
+  "endpoints": [
+    {
+      "method": "get_events",
+      "title": "Events Types",
+      "description": "Returns the list of supported tournament types included in the current subscription plan.",
+      "request": {
+        "path": "/?method=get_events&APIkey={APIkey}",
+        "example_url": "https://api.api-tennis.com/tennis/?method=get_events&APIkey=!_your_account_APIkey_!",
+        "http_methods_supported": [
+          "GET",
+          "POST"
+        ],
+        "required_params": [
+          "method",
+          "APIkey"
+        ],
+        "optional_params": []
+      },
+      "response": {
+        "success_type": "integer",
+        "result_type": "array",
+        "item_type": "object",
+        "item_schema": {
+          "event_type_key": "string",
+          "event_type_type": "string"
+        }
+      },
+      "example_response": {
+        "success": 1,
+        "result": [
+          {
+            "event_type_key": "267",
+            "event_type_type": "Atp Doubles"
+          },
+          {
+            "event_type_key": "265",
+            "event_type_type": "Atp Singles"
+          },
+          {
+            "event_type_key": "281",
+            "event_type_type": "Challenger Men Singles"
+          }
+        ]
+      }
+    },
+    {
+      "method": "get_tournaments",
+      "title": "Tournaments",
+      "description": "Returns the list of supported tournaments included in the current subscription plan.",
+      "request": {
+        "path": "/?method=get_tournaments&APIkey={APIkey}",
+        "example_url": "https://api.api-tennis.com/tennis/?method=get_tournaments&APIkey=!_your_account_APIkey_!",
+        "http_methods_supported": [
+          "GET",
+          "POST"
+        ],
+        "required_params": [
+          "method",
+          "APIkey"
+        ],
+        "optional_params": []
+      },
+      "response": {
+        "success_type": "integer",
+        "result_type": "array",
+        "item_type": "object",
+        "item_schema": {
+          "tournament_key": "string",
+          "tournament_name": "string",
+          "event_type_key": "string",
+          "event_type_type": "string"
+        }
+      },
+      "example_response": {
+        "success": 1,
+        "result": [
+          {
+            "tournament_key": "2833",
+            "tournament_name": "Aachen",
+            "event_type_key": "281",
+            "event_type_type": "Challenger Men Singles"
+          },
+          {
+            "tournament_key": "3872",
+            "tournament_name": "Abu Dhabi",
+            "event_type_key": "266",
+            "event_type_type": "Wta Singles"
+          }
+        ]
+      }
+    },
+    {
+      "method": "get_fixtures",
+      "title": "Fixtures",
+      "description": "Returns tennis fixtures included in the current subscription plan.",
+      "request": {
+        "path": "/?method=get_fixtures&APIkey={APIkey}&date_start={YYYY-MM-DD}&date_stop={YYYY-MM-DD}",
+        "example_url": "https://api.api-tennis.com/tennis/?method=get_fixtures&APIkey=!_your_account_APIkey_!&date_start=2019-07-24&date_stop=2019-07-24",
+        "http_methods_supported": [
+          "GET",
+          "POST"
+        ],
+        "required_params": [
+          "method",
+          "APIkey",
+          "date_start",
+          "date_stop"
+        ],
+        "optional_params": [
+          "event_type_key",
+          "tournament_key",
+          "tournament_season",
+          "match_key",
+          "player_key",
+          "timezone"
+        ]
+      },
+      "response": {
+        "success_type": "integer",
+        "result_type": "array",
+        "item_type": "object",
+        "item_schema": {
+          "event_key": "string",
+          "event_date": "YYYY-MM-DD",
+          "event_time": "HH:MM",
+          "event_first_player": "string",
+          "first_player_key": "string",
+          "event_second_player": "string",
+          "second_player_key": "string",
+          "event_final_result": "string",
+          "event_game_result": "string",
+          "event_serve": "string|null",
+          "event_winner": "string|null",
+          "event_status": "string",
+          "event_type_type": "string",
+          "tournament_name": "string",
+          "tournament_key": "string",
+          "tournament_round": "string",
+          "tournament_season": "string",
+          "event_live": "0|1",
+          "event_qualification": "string|boolean",
+          "event_first_player_logo": "string|null",
+          "event_second_player_logo": "string|null",
+          "pointbypoint": "array",
+          "scores": "array"
+        }
+      },
+      "example_response": {
+        "success": 1,
+        "result": [
+          {
+            "event_key": "143104",
+            "event_date": "2022-06-17",
+            "event_time": "18:00",
+            "event_first_player": "M. Navone",
+            "first_player_key": "949",
+            "event_second_player": "C. Gomez-Herrera",
+            "second_player_key": "3474",
+            "event_final_result": "-",
+            "event_game_result": "-",
+            "event_serve": null,
+            "event_winner": null,
+            "event_status": "",
+            "event_type_type": "Challenger Men Singles",
+            "tournament_name": "Corrientes Challenger Men",
+            "tournament_key": "2646",
+            "tournament_round": "",
+            "tournament_season": "2022",
+            "event_live": "0",
+            "event_qualification": "False",
+            "event_first_player_logo": null,
+            "event_second_player_logo": "https://api.api-tennis.com/logo-tennis/3474_c-gomez-herrera.jpg",
+            "pointbypoint": [],
+            "scores": []
+          },
+          {
+            "event_key": "143113",
+            "event_date": "2022-06-17",
+            "event_time": "01:05",
+            "event_first_player": "C. Chidekh",
+            "first_player_key": "7102",
+            "event_second_player": "M. Cassone",
+            "second_player_key": "12744",
+            "event_final_result": "2 - 0",
+            "event_game_result": "-",
+            "event_serve": null,
+            "event_winner": "First Player",
+            "event_status": "Finished",
+            "event_type_type": "Itf Men Singles",
+            "tournament_name": "ITF M25 Wichita, KS Men",
+            "tournament_key": "4195",
+            "tournament_round": "",
+            "tournament_season": "2022",
+            "event_live": "0",
+            "event_first_player_logo": null,
+            "event_second_player_logo": null,
+            "pointbypoint": [
+              {
+                "set_number": "Set 1",
+                "number_game": "1",
+                "player_served": "First Player",
+                "serve_winner": "First Player",
+                "serve_lost": null,
+                "score": "1 - 0",
+                "points": [
+                  {
+                    "number_point": "1",
+                    "score": "15 - 0",
+                    "break_point": null,
+                    "set_point": null,
+                    "match_point": null
+                  }
+                ]
+              }
+            ],
+            "scores": [
+              {
+                "score_first": "6",
+                "score_second": "4",
+                "score_set": "1"
+              },
+              {
+                "score_first": "6",
+                "score_second": "2",
+                "score_set": "2"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "method": "get_livescore",
+      "title": "Livescore",
+      "description": "Returns tennis now playing events included in the current subscription plan.",
+      "request": {
+        "path": "/?method=get_livescore&APIkey={APIkey}",
+        "example_url": "https://api.api-tennis.com/tennis/?method=get_livescore&APIkey=!_your_account_APIkey_!",
+        "http_methods_supported": [
+          "GET",
+          "POST"
+        ],
+        "required_params": [
+          "method",
+          "APIkey"
+        ],
+        "optional_params": [
+          "event_type_key",
+          "tournament_key",
+          "match_key",
+          "player_key",
+          "timezone"
+        ]
+      },
+      "response": {
+        "success_type": "integer",
+        "result_type": "array",
+        "item_type": "object",
+        "item_schema": {
+          "event_key": "string",
+          "event_date": "YYYY-MM-DD",
+          "event_time": "HH:MM",
+          "event_first_player": "string",
+          "first_player_key": "string",
+          "event_second_player": "string",
+          "second_player_key": "string",
+          "event_final_result": "string",
+          "event_game_result": "string",
+          "event_serve": "string|null",
+          "event_winner": "string|null",
+          "event_status": "string",
+          "event_type_type": "string",
+          "tournament_name": "string",
+          "tournament_key": "string",
+          "tournament_round": "string",
+          "tournament_season": "string",
+          "event_live": "0|1",
+          "event_qualification": "string|boolean",
+          "event_first_player_logo": "string|null",
+          "event_second_player_logo": "string|null",
+          "pointbypoint": "array",
+          "scores": "array"
+        }
+      },
+      "example_response": {
+        "success": 1,
+        "result": [
+          {
+            "event_key": "143192",
+            "event_date": "2022-06-17",
+            "event_time": "10:10",
+            "event_first_player": "S. Bejlek",
+            "first_player_key": "9393",
+            "event_second_player": "R. Zarazua",
+            "second_player_key": "1805",
+            "event_final_result": "0 - 0",
+            "event_game_result": "0 - 0",
+            "event_serve": "First Player",
+            "event_winner": null,
+            "event_status": "Set 1",
+            "event_type_type": "Itf Women Singles",
+            "tournament_name": "ITF W60 Ceska Lipa Women",
+            "tournament_key": "4210",
+            "tournament_round": "",
+            "tournament_season": "2022",
+            "event_live": "1",
+            "event_first_player_logo": null,
+            "event_second_player_logo": "https://api.tennis.com/logo-tennis/1805_r-zarazua.jpg",
+            "event_qualification": "False",
+            "pointbypoint": [
+              {
+                "set_number": "Set 1",
+                "number_game": "1",
+                "player_served": "First Player",
+                "serve_winner": "First Player",
+                "serve_lost": null,
+                "score": "1 - 0",
+                "points": [
+                  {
+                    "number_point": "1",
+                    "score": "15 - 0",
+                    "break_point": null,
+                    "set_point": null,
+                    "match_point": null
+                  }
+                ]
+              }
+            ],
+            "scores": [
+              {
+                "score_first": "5",
+                "score_second": "5",
+                "score_set": "1"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "method": "get_H2H",
+      "title": "H2H (Head to Head)",
+      "description": "Returns the last games between submitted players and the last games of each player.",
+      "request": {
+        "path": "/?method=get_H2H&APIkey={APIkey}&first_player_key={first_player_key}&second_player_key={second_player_key}",
+        "example_url": "https://api.api-tennis.com/tennis/?method=get_H2H&APIkey=!_your_account_APIkey_!&first_player_key=30&second_player_key=5",
+        "http_methods_supported": [
+          "GET",
+          "POST"
+        ],
+        "required_params": [
+          "method",
+          "APIkey",
+          "first_player_key",
+          "second_player_key"
+        ],
+        "optional_params": []
+      },
+      "response": {
+        "success_type": "integer",
+        "result_type": "object",
+        "item_schema": {
+          "H2H": "array",
+          "firstPlayerResults": "array",
+          "secondPlayerResults": "array"
+        }
+      },
+      "example_response": {
+        "success": 1,
+        "result": {
+          "H2H": [],
+          "firstPlayerResults": [
+            {
+              "event_key": "112163",
+              "event_date": "2022-05-11",
+              "event_time": "15:00",
+              "event_first_player": "Cervantes Tomas/ Ferrer Adria",
+              "first_player_key": "2616",
+              "event_second_player": "Kravchenko/ Reymond",
+              "second_player_key": "2316",
+              "event_final_result": "0 - 2",
+              "event_game_result": "-",
+              "event_serve": null,
+              "event_winner": "Second Player",
+              "event_status": "Finished",
+              "event_type_type": "Itf Men Doubles",
+              "tournament_name": "ITF M15 Ulcinj Men",
+              "tournament_key": "4561",
+              "tournament_round": "ITF M15 Ulcinj Men - 1/8-finals",
+              "tournament_season": "2022",
+              "event_live": "0",
+              "event_first_player_logo": null,
+              "event_second_player_logo": null
+            }
+          ],
+          "secondPlayerResults": [
+            {
+              "event_key": "94804",
+              "event_date": "2022-05-11",
+              "event_time": "15:10",
+              "event_first_player": "Lopez San Martin/ Rincon",
+              "first_player_key": "2139",
+              "event_second_player": "Regas/ Vasershtein",
+              "second_player_key": "2617",
+              "event_final_result": "2 - 0",
+              "event_game_result": "-",
+              "event_serve": null,
+              "event_winner": "First Player",
+              "event_status": "Finished",
+              "event_type_type": "Itf Men Doubles",
+              "tournament_name": "ITF M15 Valldoreix Men",
+              "tournament_key": "3855",
+              "tournament_round": "ITF M15 Valldoreix Men - Quarter-finals",
+              "tournament_season": "2022",
+              "event_live": "0",
+              "event_first_player_logo": null,
+              "event_second_player_logo": null
+            }
+          ]
+        }
+      }
+    },
+    {
+      "method": "get_standings",
+      "title": "Standings",
+      "description": "Returns standings for tennis tournaments included in the current subscription plan.",
+      "request": {
+        "path": "/?method=get_standings&APIkey={APIkey}&event_type={ATP|WTA}",
+        "example_url": "https://api.api-tennis.com/tennis/?method=get_standings&event_type=WTA&APIkey=!_your_account_APIkey_!",
+        "http_methods_supported": [
+          "GET",
+          "POST"
+        ],
+        "required_params": [
+          "method",
+          "APIkey",
+          "event_type"
+        ],
+        "optional_params": []
+      },
+      "response": {
+        "success_type": "integer",
+        "result_type": "array",
+        "item_type": "object",
+        "item_schema": {
+          "place": "string",
+          "player": "string",
+          "player_key": "string",
+          "league": "string",
+          "movement": "string",
+          "country": "string",
+          "points": "string"
+        }
+      },
+      "example_response": {
+        "success": 1,
+        "result": [
+          {
+            "place": "1",
+            "player": "Iga Swiatek",
+            "player_key": "1910",
+            "league": "WTA",
+            "movement": "same",
+            "country": "Poland",
+            "points": "8501"
+          },
+          {
+            "place": "2",
+            "player": "Anett Kontaveit",
+            "player_key": "2388",
+            "league": "WTA",
+            "movement": "same",
+            "country": "Estonia",
+            "points": "4476"
+          }
+        ]
+      }
+    },
+    {
+      "method": "get_players",
+      "title": "Players",
+      "description": "Returns tennis player profiles.",
+      "request": {
+        "path": "/?method=get_players&APIkey={APIkey}&player_key={player_key}",
+        "example_url": "https://api.api-tennis.com/tennis/?method=get_players&player_key=137&APIkey=!_your_account_APIkey_!",
+        "http_methods_supported": [
+          "GET",
+          "POST"
+        ],
+        "required_params": [
+          "method",
+          "APIkey"
+        ],
+        "optional_params": [
+          "player_key",
+          "tournament_key"
+        ]
+      },
+      "response": {
+        "success_type": "integer",
+        "result_type": "array",
+        "item_type": "object",
+        "item_schema": {
+          "player_key": "string",
+          "player_name": "string",
+          "player_country": "string",
+          "player_bday": "DD.MM.YYYY",
+          "player_logo": "string",
+          "stats": "array"
+        }
+      },
+      "example_response": {
+        "success": 1,
+        "result": [
+          {
+            "player_key": "1905",
+            "player_name": "N. Djokovic",
+            "player_country": "Serbia",
+            "player_bday": "22.05.1987",
+            "player_logo": "https://api.api-tennis.com/logo-tennis/1905_n-djokovic.jpg",
+            "stats": [
+              {
+                "season": "2021",
+                "type": "doubles",
+                "rank": "255",
+                "titles": "0",
+                "matches_won": "6",
+                "matches_lost": "4",
+                "hard_won": "2",
+                "hard_lost": "2",
+                "clay_won": "",
+                "clay_lost": "",
+                "grass_won": "3",
+                "grass_lost": "0"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "method": "get_odds",
+      "title": "Odds",
+      "description": "Returns odds for tennis matches included in the current subscription plan.",
+      "request": {
+        "path": "/?method=get_odds&APIkey={APIkey}&match_key={match_key}",
+        "example_url": "https://api.api-tennis.com/tennis/?method=get_odds&match_key=159923&APIkey=!_your_account_APIkey_!",
+        "http_methods_supported": [
+          "GET",
+          "POST"
+        ],
+        "required_params": [
+          "method",
+          "APIkey"
+        ],
+        "optional_params": [
+          "date_start",
+          "date_stop",
+          "event_type_key",
+          "tournament_key",
+          "match_key"
+        ]
+      },
+      "response": {
+        "success_type": "integer",
+        "result_type": "object",
+        "item_schema": {
+          "dynamic_match_key_object": {
+            "market_name": "object"
+          }
+        },
+        "notes": [
+          "The top-level result object is keyed by match_key.",
+          "Markets include structures such as Home/Away, Correct Score 1st Half, Home/Away (1st Set), Set Betting, Win In Straigh Sets (Player 1), and Win In Straigh Sets (Player 2).",
+          "Bookmaker odds are nested under each selection."
+        ]
+      },
+      "example_response": {
+        "success": 1,
+        "result": {
+          "159923": {
+            "Home/Away": {
+              "Home": {
+                "bwin": "2.40",
+                "bet365": "2.50"
+              },
+              "Away": {
+                "bwin": "1.48",
+                "bet365": "1.50"
+              }
+            },
+            "Set Betting": {
+              "2:0": {
+                "bwin": "3.90",
+                "bet365": "3.75"
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "method": "get_live_odds",
+      "title": "Live Odds",
+      "description": "Returns live tennis odds for live matches.",
+      "request": {
+        "path": "/?method=get_live_odds&APIkey={APIkey}",
+        "example_url": "https://api.api-tennis.com/tennis/?method=get_live_odds&APIkey=!_your_account_APIkey_!",
+        "http_methods_supported": [
+          "GET",
+          "POST"
+        ],
+        "required_params": [
+          "method",
+          "APIkey"
+        ],
+        "optional_params": [
+          "event_type_key",
+          "tournament_key",
+          "match_key",
+          "player_key",
+          "timezone"
+        ]
+      },
+      "response": {
+        "success_type": "integer",
+        "result_type": "object",
+        "item_schema": {
+          "event_key": "number",
+          "event_date": "YYYY-MM-DD",
+          "event_time": "HH:MM",
+          "first_player_key": "number",
+          "second_player_key": "number",
+          "event_game_result": "string",
+          "event_serve": "string",
+          "event_winner": "string|null",
+          "event_status": "string",
+          "event_type_type": "string",
+          "tournament_name": "string",
+          "tournament_key": "number",
+          "tournament_round": "string",
+          "tournament_season": "string",
+          "event_live": "string|number",
+          "event_first_player_logo": "string|null",
+          "event_second_player_logo": "string|null",
+          "event_qualification": "string|boolean",
+          "live_odds": "array"
+        }
+      },
+      "example_response": {
+        "success": 1,
+        "result": {
+          "11976653": {
+            "event_key": 11976653,
+            "event_date": "2024-08-22",
+            "event_time": "08:45",
+            "first_player_key": 69252,
+            "second_player_key": 73380,
+            "event_game_result": "30 - 30",
+            "event_serve": "First Player",
+            "event_winner": null,
+            "event_status": "Set 2",
+            "event_type_type": "Itf Women Doubles",
+            "tournament_name": "ITF W35 Kunshan Women",
+            "tournament_key": 11556,
+            "tournament_round": "ITF W35 Kunshan Women - Quarter-finals",
+            "tournament_season": "2024",
+            "event_live": "08:45",
+            "event_first_player_logo": null,
+            "event_second_player_logo": null,
+            "event_qualification": "False",
+            "live_odds": [
+              {
+                "odd_name": "Set 1 to Break Serve",
+                "suspended": "Yes",
+                "type": "1/Yes",
+                "value": "1.125",
+                "handicap": null,
+                "upd": "2024-08-22 09:15:10"
+              }
+            ]
+          }
+        }
+      }
+    }
+  ]
+}

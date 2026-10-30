@@ -1,0 +1,29 @@
+name: Generador Automatizado de Noticias de Tenis
+
+on:
+  schedule:
+    # Se ejecuta 2 veces al día: 10:00 UTC (07:00 ART) y 20:00 UTC (17:00 ART)
+    - cron: '0 10,20 * * *'
+  workflow_dispatch: # Permite ejecutarlo manualmente en 1 clic desde la pestaña Actions en GitHub
+
+jobs:
+  generate-news:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout del repositorio
+        uses: actions/checkout@v4
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Instalar dependencias
+        run: npm install
+
+      - name: Ejecutar generador de noticias
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          FIREBASE_API_KEY: ${{ secrets.FIREBASE_API_KEY }}
+        run: node scripts/generate_news.js
+

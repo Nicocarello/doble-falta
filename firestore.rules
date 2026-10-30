@@ -1,0 +1,29 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /topics/{topicId} {
+      allow read: if true;
+      allow create: if request.resource.data.keys().hasAll(['title','author','category','excerpt','createdAt'])
+                      && request.resource.data.title is string
+                      && request.resource.data.title.size() > 3
+                      && request.resource.data.title.size() < 200;
+      allow update: if request.resource.data.diff(resource.data).affectedKeys()
+                        .hasOnly(['repliesCount', 'views', 'likesBase']);
+      allow delete: if false;
+
+      match /replies/{replyId} {
+        allow read: if true;
+        allow create: if request.resource.data.keys().hasAll(['author','content','createdAt'])
+                        && request.resource.data.content is string
+                        && request.resource.data.content.size() > 2
+                        && request.resource.data.content.size() < 2000;
+        allow update, delete: if false;
+      }
+    }
+
+    match /news/{newsId} {
+      allow read: if true;
+      allow write: if request.resource.data.keys().hasAll(['title', 'slug', 'excerpt', 'content', 'publishedAt']);
+    }
+  }
+}

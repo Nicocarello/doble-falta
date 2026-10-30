@@ -1,0 +1,256 @@
+.wordle-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 20px;
+  color: white;
+  position: relative;
+}
+
+.wordle-header {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.wordle-header h1 {
+  font-size: 2.5rem;
+  margin-bottom: 5px;
+  background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.wordle-header p {
+  color: #ccc;
+  font-size: 0.9rem;
+}
+
+.wordle-message {
+  position: fixed;
+  top: 100px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: white;
+  color: black;
+  padding: 10px 20px;
+  border-radius: 5px;
+  font-weight: bold;
+  z-index: 100;
+  animation: fadein 0.3s;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+}
+
+.wordle-board {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 30px;
+  width: 100%;
+}
+
+.wordle-row {
+  display: grid;
+  gap: 6px;
+  width: 100%;
+  justify-content: center;
+}
+
+.wordle-row.shake {
+  animation: shake 0.5s;
+}
+
+.wordle-cell {
+  width: 100%;
+  aspect-ratio: 1;
+  max-width: 55px;
+  max-height: 55px;
+  border: 2px solid #3a3a3c;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 2rem;
+  font-weight: bold;
+  text-transform: uppercase;
+  transition: all 0.1s ease;
+}
+
+.wordle-cell.filled {
+  border-color: #565758;
+}
+
+.wordle-cell.correct {
+  background-color: #538d4e;
+  border-color: #538d4e;
+  color: white;
+  animation: flipIn 0.5s ease-in-out;
+}
+
+.wordle-cell.present {
+  background-color: #b59f3b;
+  border-color: #b59f3b;
+  color: white;
+  animation: flipIn 0.5s ease-in-out;
+}
+
+.wordle-cell.absent {
+  background-color: #3a3a3c;
+  border-color: #3a3a3c;
+  color: white;
+  animation: flipIn 0.5s ease-in-out;
+}
+
+.wordle-keyboard {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+}
+
+.keyboard-row {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+}
+
+.key {
+  background-color: #818384;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  height: 58px;
+  flex: 1;
+  font-size: 1.2rem;
+  font-weight: bold;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-transform: uppercase;
+  user-select: none;
+  transition: all 0.1s;
+}
+
+.key:active {
+  transform: scale(0.95);
+}
+
+.key.key-wide {
+  flex: 1.5;
+  font-size: 0.9rem;
+}
+
+.key.correct {
+  background-color: #538d4e;
+}
+
+.key.present {
+  background-color: #b59f3b;
+}
+
+.key.absent {
+  background-color: #3a3a3c;
+}
+
+.top10-game__back-btn {
+  background: none;
+  border: none;
+  color: #ccc;
+  cursor: pointer;
+  padding: 10px 0;
+  font-size: 0.9rem;
+  margin-bottom: 10px;
+  align-self: flex-start;
+  transition: color 0.2s;
+}
+
+.top10-game__back-btn:hover {
+  color: white;
+}
+
+.top10-game__result {
+  background: rgba(30, 30, 35, 0.9);
+  border-radius: 12px;
+  padding: 30px;
+  text-align: center;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  animation: slideUp 0.4s ease-out forwards;
+}
+
+.result-won {
+  border-top: 4px solid #00e676;
+}
+
+.result-lost {
+  border-top: 4px solid #ff5252;
+}
+
+.btn-share {
+  background: var(--clay-orange, #d85a00);
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-share:hover {
+  transform: translateY(-2px);
+  filter: brightness(1.1);
+}
+
+.btn-giveup {
+  background: transparent;
+  color: #ff5252;
+  border: 1px solid #ff5252;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  margin-top: 20px;
+  font-weight: bold;
+  transition: all 0.2s;
+}
+
+.btn-giveup:hover {
+  background: rgba(255, 82, 82, 0.1);
+}
+
+@keyframes shake {
+  10%, 90% { transform: translateX(-1px); }
+  20%, 80% { transform: translateX(2px); }
+  30%, 50%, 70% { transform: translateX(-4px); }
+  40%, 60% { transform: translateX(4px); }
+}
+
+@keyframes flipIn {
+  0% { transform: rotateX(-90deg); }
+  100% { transform: rotateX(0); }
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@media (max-width: 500px) {
+  .wordle-cell {
+    font-size: 1.5rem;
+    max-width: 45px;
+    max-height: 45px;
+  }
+  .key {
+    height: 45px;
+    font-size: 1rem;
+    padding: 0 3px;
+  }
+  .key.key-wide {
+    font-size: 0.8rem;
+  }
+  .keyboard-row {
+    gap: 4px;
+  }
+}
