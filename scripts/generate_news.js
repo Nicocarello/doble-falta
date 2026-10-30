@@ -1,7 +1,7 @@
 import { initializeApp } from 'firebase/app';
-import { getFirestore, doc, setDoc, getDocs, collection, query, limit } from 'firebase/firestore';
+import { getFirestore, doc, setDoc } from 'firebase/firestore';
 
-// Configuración de Firebase (mismo proyecto doble-falta)
+// 1. Configuración de Firebase
 const firebaseConfig = {
   apiKey: process.env.FIREBASE_API_KEY || 'AIzaSyB91DcrQp1yz3pWsppvk0MiVkrngCopSy0',
   authDomain: 'doble-falta.firebaseapp.com',
@@ -14,84 +14,134 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
+// 2. Configuración de API Tennis y Gemini
+const TENNIS_API_KEY = process.env.TENNIS_API_KEY || 'd46d92e3827836bf3ce38f94eda654e1769077e4ed7e044eeae45fbbfa8f0024';
+const TENNIS_API_URL = 'https://api.api-tennis.com/tennis/';
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 
-// Imágenes representativas de tenis de alta resolución (Unsplash con licencia libre)
-const TENNIS_IMAGES = [
-  'https://images.unsplash.com/photo-1595435934249-5df7ed86e1c0?auto=format&fit=crop&w=800&q=80',
-  'https://images.unsplash.com/photo-1554068865-24cecd4e34b8?auto=format&fit=crop&w=800&q=80',
-  'https://images.unsplash.com/photo-1530915534664-4ac642379740?auto=format&fit=crop&w=800&q=80',
-  'https://images.unsplash.com/photo-1622279457486-62dcc4a431d6?auto=format&fit=crop&w=800&q=80',
-  'https://images.unsplash.com/photo-1587280501635-68a0e82cd5ff?auto=format&fit=crop&w=800&q=80'
+// Lista exhaustiva de apellidos / nombres de tenistas argentinos (ATP, WTA, Challenger e ITF)
+const KNOWN_ARG_PLAYERS = [
+  'cerundolo', 'baez', 'etcheverry', 'navone', 'comesana', 'ugo carabelli',
+  'diaz acosta', 'tirante', 'coria', 'schwartzman', 'ficovich', 'kicker',
+  'villanueva', 'olivo', 'casanova', 'midon', 'ambrogi', 'rodriguez taverna',
+  'burruchaga', 'podoroska', 'carle', 'riera', 'sierra', 'capurro', 'ortenzi',
+  'zeballos', 'gonzalez', 'molteni', 'bagnis', 'monterrubini', 'monzon',
+  'descotte', 'farjat', 'estabee', 'valerio', 'lingua', 'aboian', 'perez contri',
+  'galdos', 'paz'
 ];
 
-// 1. Obtener los titulares más recientes desde Google News RSS (Tenis en Español)
-async function fetchLatestTennisNews() {
-  const rssUrl = 'https://news.google.com/rss/search?q=tenis+ATP+OR+WTA&hl=es-419&gl=AR&ceid=AR:es-419';
-  console.log('📡 Consultando RSS de tenis:', rssUrl);
-  
-  const res = await fetch(rssUrl);
-  const xml = await res.text();
-  
-  const items = [];
-  const itemRegex = /<item>[\s\S]*?<title>(.*?)<\/title>[\s\S]*?<link>(.*?)<\/link>[\s\S]*?<pubDate>(.*?)<\/pubDate>[\s\S]*?<description>(.*?)<\/description>[\s\S]*?<\/item>/g;
-  
-  let match;
-  while ((match = itemRegex.exec(xml)) !== null && items.length < 15) {
-    const rawTitle = match[1].replace(/<!\[CDATA\[(.*?)\]\]>/g, '$1').trim();
-    const cleanTitle = rawTitle.split(' - ')[0]; // Remueve el nombre del diario al final
-    const link = match[2];
-    const pubDate = match[3];
-    const rawDesc = match[4].replace(/<[^>]*>?/gm, '').trim();
-    
-    // Filtro de calidad: descartar preguntas genéricas, horarios ("a qué hora", "dónde ver") y títulos demasiado cortos
-    const lower = cleanTitle.toLowerCase();
-    const isQuestion = cleanTitle.includes('?') || cleanTitle.includes('¿');
-    const isSchedule = lower.includes('a qué hora') || lower.includes('donde ver') || lower.includes('dónde ver') || lower.includes('cómo ver');
-    const isTooShort = cleanTitle.length < 25;
-
-    if (!isQuestion && !isSchedule && !isTooShort) {
-      items.push({
-        title: cleanTitle,
-        link,
-        pubDate,
-        description: rawDesc
-      });
-    }
-  }
-  
-  return items;
+function isArgPlayer(name) {
+  if (!name) return false;
+  const lower = name.toLowerCase();
+  return KNOWN_ARG_PLAYERS.some(k => lower.includes(k));
 }
 
-// 2. Generar artículo original periodístico utilizando Gemini con búsqueda en tiempo real
-async function generateArticleWithGemini(newsItem) {
-  if (!GEMINI_API_KEY) {
-    throw new Error('❌ GEMINI_API_KEY no está configurada en las variables de entorno. Para garantizar artículos de alta calidad con datos reales de tenis, se requiere la clave de Gemini.');
+// Obtener fecha en formato YYYY-MM-DD en hora de Argentina (ART)
+function getArgentinaDate(offsetDays = 0) {
+  const d = new Date();
+  d.setDate(d.getDate() + offsetDays);
+  const options = { timeZone: 'America/Argentina/Buenos_Aires', year: 'numeric', month: '2-digit', day: '2-digit' };
+  const formatter = new Intl.DateTimeFormat('en-CA', options);
+  return formatter.format(d); // yyyy-mm-dd
+}
+
+// Formatear fecha para lectura humana (ej: "jueves 29 de octubre")
+function formatHumanDate(dateStr) {
+  const [y, m, d] = dateStr.split('-');
+  const dateObj = new Date(`${dateStr}T12:00:00`);
+  return dateObj.toLocaleDateString('es-AR', {
+    weekday: 'long',
+    day: 'numeric',
+    month: 'long'
+  });
+}
+
+// Consultar API de tenis
+async function fetchFixtures(dateStr) {
+  const query = new URLSearchParams({
+    method: 'get_fixtures',
+    APIkey: TENNIS_API_KEY,
+    date_start: dateStr,
+    date_stop: dateStr
+  }).toString();
+
+  const res = await fetch(`${TENNIS_API_URL}?${query}`);
+  if (!res.ok) throw new Error(`Tennis API error: ${res.statusText}`);
+  const data = await res.json();
+  return data.result || [];
+}
+
+// Parsear y estructurar partidos de argentinos terminados
+function parseArgMatches(matches) {
+  const argMatches = [];
+
+  for (const m of matches) {
+    const isP1Arg = isArgPlayer(m.event_first_player);
+    const isP2Arg = isArgPlayer(m.event_second_player);
+
+    if (!isP1Arg && !isP2Arg) continue;
+
+    // Solo considerar partidos que hayan finalizado
+    const isFinished = m.event_status === 'Finished' || m.event_status === 'Retired' || m.event_status === 'After Pen.';
+    if (!isFinished) continue;
+
+    const argName = isP1Arg ? m.event_first_player : m.event_second_player;
+    const opponent = isP1Arg ? m.event_second_player : m.event_first_player;
+    const argWon = isP1Arg ? m.event_winner === 'First Player' : m.event_winner === 'Second Player';
+
+    const scoresList = (m.scores || []).map(s => {
+      return isP1Arg
+        ? `${s.score_first}-${s.score_second}`
+        : `${s.score_second}-${s.score_first}`;
+    });
+    const scoreStr = scoresList.length > 0 ? scoresList.join(', ') : (m.event_final_result || 'Final');
+
+    argMatches.push({
+      tournament: m.tournament_name || 'Torneo Internacional',
+      round: m.tournament_round || '',
+      argName,
+      opponent,
+      argWon,
+      scoreStr,
+      status: m.event_status
+    });
   }
+
+  return argMatches;
+}
+
+// Generación editorial con Gemini cuando la clave está disponible
+async function generateEditorialWithGemini(dateStr, humanDate, argMatches) {
+  const victorias = argMatches.filter(m => m.argWon);
+  const derrotas = argMatches.filter(m => !m.argWon);
+
+  const matchSummaryText = argMatches.map(m => {
+    return `- ${m.argWon ? 'VICTORIA' : 'DERROTA'}: ${m.argName} vs ${m.opponent} en ${m.tournament} (Score: ${m.scoreStr}${m.status === 'Retired' ? ' - Abandono' : ''})`;
+  }).join('\n');
 
   const prompt = `
-Actúa como un periodista deportivo de élite especializado en tenis para el medio "DobleFalta".
-A partir de este acontecimiento reciente del tenis internacional:
-Título del suceso: "${newsItem.title}"
+Actúa como un periodista deportivo argentino de tenis para el portal de noticias "DobleFalta".
+Fecha de la jornada: ${humanDate} (${dateStr}).
 
-Tu misión es escribir una crónica periodística o artículo analítico COMPLETO, riguroso, profundo y con datos específicos (jugadores, torneos, sets, rivales, superficie, impacto en los puntos y el ranking ATP o WTA).
-NO escribas generalidades vacías. Menciona nombres reales, contexto del torneo y datos técnicos concretos del juego.
+Aquí tienes los resultados oficiales y confirmados de todos los tenistas argentinos que jugaron en la jornada:
+${matchSummaryText}
 
-Responde ÚNICAMENTE con un objeto JSON válido (sin formato markdown ni texto alrededor) con esta estructura exacta:
+Escribe una crónica periodística completa, atractiva, rigurosa y en español rioplatense neutro.
+Debe tener exactamente este formato JSON (sin texto adicional ni bloques markdown \`\`\`json):
 {
-  "title": "Título periodístico y atractivo de máximo 80 caracteres",
-  "slug": "slug-url-amigable-en-kebab-case",
-  "excerpt": "Resumen conciso y sustancioso de 2 oraciones para la portada",
-  "category": "Una de: ATP, WTA, Grand Slams, Tenis Argentino, Análisis Táctico",
+  "title": "Título periodístico y atrapante destacando las victorias o figuras principales (máximo 80 caracteres)",
+  "slug": "resumen-argentinos-${dateStr}",
+  "excerpt": "Un resumen de 2 oraciones para la portada destacando lo más importante de la jornada de los argentinos.",
+  "category": "Tenis Argentino",
   "readTime": "4 min",
-  "content": "<p>Párrafo 1: Cobertura del hecho, nombres de los protagonistas y contexto...</p><h2>Claves del encuentro y rendimiento</h2><p>Párrafo 2: Detalles técnicos, saques, quiebres y estadísticas del partido...</p><h2>Impacto en el Ranking y lo que sigue</h2><p>Párrafo 3: Cómo repercute en los puntos de la tabla ATP/WTA y el próximo rival...</p>"
+  "content": "<p>Párrafo de apertura con balance general de la jornada para la legión argentina...</p><h2>Las victorias destacadas</h2><p>Párrafo comentando los triunfos con detalles y marcadores...</p><h2>Otros resultados y balance</h2><p>Párrafo comentando los encuentros restantes y lo que se viene...</p>"
 }
 
-Requisitos estrictos:
-1. Mínimo 400 palabras en el campo "content".
-2. Redacción 100% original en español rioplatense neutro con calidad editorial.
+Requisitos:
+1. Mínimo 400 palabras en "content".
+2. Menciona a los jugadores reales y sus rivales y marcadores.
 3. El campo "content" debe ser HTML limpio con <p>, <h2>, <strong> y <ul> si aplica.
-4. Responde ÚNICAMENTE con el JSON.
+4. Responde ÚNICAMENTE con el objeto JSON.
 `;
 
   const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`;
@@ -101,66 +151,115 @@ Requisitos estrictos:
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
       contents: [{ parts: [{ text: prompt }] }],
-      tools: [{ google_search: {} }],
       generationConfig: { temperature: 0.7, maxOutputTokens: 2500 }
     })
   });
 
   if (!response.ok) {
-    const errText = await response.text();
-    throw new Error(`Gemini API Error: ${response.status} ${response.statusText} - ${errText}`);
+    throw new Error(`Gemini API Error: ${response.status} ${response.statusText}`);
   }
 
   const data = await response.json();
   const rawText = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
-  
-  // Limpiar posibles bloques markdown ```json ... ```
   const cleanJson = rawText.replace(/```json/gi, '').replace(/```/g, '').trim();
   return JSON.parse(cleanJson);
 }
 
+// Generador periodístico estructurado si no hay clave de Gemini
+function generateStructuredReport(dateStr, humanDate, argMatches) {
+  const victorias = argMatches.filter(m => m.argWon);
+  const derrotas = argMatches.filter(m => !m.argWon);
+
+  const mainWinners = victorias.slice(0, 3).map(m => m.argName).join(', ');
+  const title = `Resultados de los tenistas argentinos: Jornada del ${humanDate}`;
+
+  let contentHtml = `
+    <p>La legión argentina completó una intensa jornada de actividad en el circuito profesional internacional con presencia en certámenes ATP, WTA y torneos Challenger. A continuación, el repaso detallado de todos los resultados con sus respectivos marcadores y actuaciones.</p>
+  `;
+
+  if (victorias.length > 0) {
+    contentHtml += `<h2>Victorias argentinas de la fecha (${victorias.length})</h2><ul>`;
+    victorias.forEach(m => {
+      contentHtml += `<li><strong>${m.argName}</strong> superó a ${m.opponent} por <strong>${m.scoreStr}</strong> en <em>${m.tournament}</em>.</li>`;
+    });
+    contentHtml += `</ul>`;
+  }
+
+  if (derrotas.length > 0) {
+    contentHtml += `<h2>Otros resultados de la jornada (${derrotas.length})</h2><ul>`;
+    derrotas.forEach(m => {
+      contentHtml += `<li>${m.argName} cayó ante ${m.opponent} por ${m.scoreStr} en <em>${m.tournament}</em>.</li>`;
+    });
+    contentHtml += `</ul>`;
+  }
+
+  contentHtml += `
+    <h2>Seguimiento en DobleFalta</h2>
+    <p>Todos los puntos sumados por los tenistas de nuestro país impactarán en la próxima actualización del ranking oficial ATP y WTA del día lunes. Seguí las transmisiones punto a punto, fixtures y estadísticas en vivo en nuestra plataforma.</p>
+  `;
+
+  return {
+    title: title,
+    slug: `resumen-argentinos-${dateStr}`,
+    excerpt: `Balance completo de la legión argentina: ${victorias.length} victorias y ${derrotas.length} derrotas en certámenes ATP, WTA y Challenger.`,
+    category: 'Tenis Argentino',
+    readTime: '4 min',
+    content: contentHtml
+  };
+}
+
 async function main() {
-  console.log('🚀 Iniciando proceso de generación automatizada de noticias DobleFalta...');
-  
+  console.log('🎾 Iniciando Generador de Noticias: Resumen de Tenistas Argentinos...');
+
+  // Determinar fecha: por defecto toma ayer (offset = -1) para garantizar partidos 100% finalizados
+  const cliDate = process.argv.find(arg => arg.startsWith('--date='))?.split('=')[1];
+  const targetDate = cliDate || process.env.TARGET_DATE || getArgentinaDate(-1);
+  const humanDate = formatHumanDate(targetDate);
+
+  console.log(`📅 Analizando jornada: ${targetDate} (${humanDate})`);
+
   try {
-    const rawNews = await fetchLatestTennisNews();
-    if (!rawNews.length) {
-      console.log('No se encontraron noticias en el feed RSS.');
+    const rawMatches = await fetchFixtures(targetDate);
+    console.log(`📦 Partidos totales en el calendario: ${rawMatches.length}`);
+
+    const argMatches = parseArgMatches(rawMatches);
+    console.log(`🇦🇷 Partidos completados con tenistas argentinos: ${argMatches.length}`);
+
+    if (argMatches.length === 0) {
+      console.log(`ℹ️ No hubo partidos finalizados de tenistas argentinos en la fecha ${targetDate}. Se omite la publicación para evitar notas vacías.`);
       return;
     }
 
-    // Tomamos la noticia más relevante
-    const targetItem = rawNews[0];
-    console.log(`📝 Procesando tema: "${targetItem.title}"`);
+    let article;
+    if (GEMINI_API_KEY) {
+      console.log('🤖 Redactando crónica periodística profunda con Gemini AI...');
+      article = await generateEditorialWithGemini(targetDate, humanDate, argMatches);
+    } else {
+      console.log('📝 Generando reporte estructurado de resultados argentinos...');
+      article = generateStructuredReport(targetDate, humanDate, argMatches);
+    }
 
-    const articleData = await generateArticleWithGemini(targetItem);
-    
-    // Asignar metadatos adicionales
-    const today = new Date().toISOString().split('T')[0];
-    const randomImage = TENNIS_IMAGES[Math.floor(Math.random() * TENNIS_IMAGES.length)];
-
+    const docId = article.slug || `resumen-argentinos-${targetDate}`;
     const finalDoc = {
-      ...articleData,
-      publishedAt: today,
+      ...article,
+      publishedAt: targetDate,
       author: 'Redacción DobleFalta',
-      imageUrl: articleData.imageUrl || randomImage,
-      sourceUrl: targetItem.link || '',
+      imageUrl: 'https://images.unsplash.com/photo-1554068865-24cecd4e34b8?auto=format&fit=crop&w=800&q=80',
+      totalMatches: argMatches.length,
       createdAt: new Date().toISOString()
     };
 
-    const docId = finalDoc.slug || `news-${Date.now()}`;
     console.log(`💾 Guardando en Firestore colección 'news' con ID: ${docId}`);
-
     await setDoc(doc(db, 'news', docId), finalDoc);
 
-    console.log('✅ ¡Artículo guardado exitosamente en Firestore!');
-    console.log(`Título: "${finalDoc.title}"`);
-    console.log(`URL local: /noticias/${docId}`);
+    console.log('✅ ¡Noticia de tenistas argentinos guardada con éxito!');
+    console.log(`📌 Título: "${finalDoc.title}"`);
+    console.log(`🔗 URL: /noticias/${docId}`);
+
   } catch (error) {
-    console.error('❌ Error en el proceso:', error);
+    console.error('❌ Error en el generador de noticias argentinas:', error);
     process.exit(1);
   }
 }
 
 main();
-

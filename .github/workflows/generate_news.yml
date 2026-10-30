@@ -1,10 +1,15 @@
-name: Generador Automatizado de Noticias de Tenis
+name: Resumen Diario de Tenistas Argentinos
 
 on:
   schedule:
-    # Se ejecuta 2 veces al día: 10:00 UTC (07:00 ART) y 20:00 UTC (17:00 ART)
-    - cron: '0 10,20 * * *'
-  workflow_dispatch: # Permite ejecutarlo manualmente en 1 clic desde la pestaña Actions en GitHub
+    # Se ejecuta todos los días a las 08:00 UTC (05:00 AM hora de Argentina)
+    - cron: '0 8 * * *'
+  workflow_dispatch: # Permite ejecutarlo manualmente en 1 clic desde GitHub
+    inputs:
+      target_date:
+        description: 'Fecha a procesar (YYYY-MM-DD, dejar vacío para ayer)'
+        required: false
+        default: ''
 
 jobs:
   generate-news:
@@ -25,5 +30,6 @@ jobs:
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           FIREBASE_API_KEY: ${{ secrets.FIREBASE_API_KEY }}
+          TARGET_DATE: ${{ github.event.inputs.target_date }}
         run: node scripts/generate_news.js
 
