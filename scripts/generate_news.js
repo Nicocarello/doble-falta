@@ -37,53 +37,61 @@ async function fetchLatestTennisNews() {
   const itemRegex = /<item>[\s\S]*?<title>(.*?)<\/title>[\s\S]*?<link>(.*?)<\/link>[\s\S]*?<pubDate>(.*?)<\/pubDate>[\s\S]*?<description>(.*?)<\/description>[\s\S]*?<\/item>/g;
   
   let match;
-  while ((match = itemRegex.exec(xml)) !== null && items.length < 5) {
+  while ((match = itemRegex.exec(xml)) !== null && items.length < 15) {
     const rawTitle = match[1].replace(/<!\[CDATA\[(.*?)\]\]>/g, '$1').trim();
     const cleanTitle = rawTitle.split(' - ')[0]; // Remueve el nombre del diario al final
     const link = match[2];
     const pubDate = match[3];
     const rawDesc = match[4].replace(/<[^>]*>?/gm, '').trim();
     
-    items.push({
-      title: cleanTitle,
-      link,
-      pubDate,
-      description: rawDesc
-    });
+    // Filtro de calidad: descartar preguntas genéricas, horarios ("a qué hora", "dónde ver") y títulos demasiado cortos
+    const lower = cleanTitle.toLowerCase();
+    const isQuestion = cleanTitle.includes('?') || cleanTitle.includes('¿');
+    const isSchedule = lower.includes('a qué hora') || lower.includes('donde ver') || lower.includes('dónde ver') || lower.includes('cómo ver');
+    const isTooShort = cleanTitle.length < 25;
+
+    if (!isQuestion && !isSchedule && !isTooShort) {
+      items.push({
+        title: cleanTitle,
+        link,
+        pubDate,
+        description: rawDesc
+      });
+    }
   }
   
   return items;
 }
 
-// 2. Generar artículo original periodístico utilizando Gemini
+// 2. Generar artículo original periodístico utilizando Gemini con búsqueda en tiempo real
 async function generateArticleWithGemini(newsItem) {
   if (!GEMINI_API_KEY) {
-    console.log('⚠️ GEMINI_API_KEY no detectada. Generando artículo con plantilla estructurada.');
-    return generateFallbackArticle(newsItem);
+    throw new Error('❌ GEMINI_API_KEY no está configurada en las variables de entorno. Para garantizar artículos de alta calidad con datos reales de tenis, se requiere la clave de Gemini.');
   }
 
   const prompt = `
-Actúa como un periodista deportivo especializado en tenis para el medio "DobleFalta".
-A partir de este hecho/noticia reciente:
-Título: "${newsItem.title}"
-Detalles: "${newsItem.description}"
+Actúa como un periodista deportivo de élite especializado en tenis para el medio "DobleFalta".
+A partir de este acontecimiento reciente del tenis internacional:
+Título del suceso: "${newsItem.title}"
 
-Escribe una crónica o artículo analítico original, riguroso y en español rioplatense neutro.
-Debe tener exactamente este formato JSON (sin texto adicional ni markdown \`\`\`json):
+Tu misión es escribir una crónica periodística o artículo analítico COMPLETO, riguroso, profundo y con datos específicos (jugadores, torneos, sets, rivales, superficie, impacto en los puntos y el ranking ATP o WTA).
+NO escribas generalidades vacías. Menciona nombres reales, contexto del torneo y datos técnicos concretos del juego.
+
+Responde ÚNICAMENTE con un objeto JSON válido (sin formato markdown ni texto alrededor) con esta estructura exacta:
 {
-  "title": "Título llamativo y periodístico de máximo 80 caracteres",
+  "title": "Título periodístico y atractivo de máximo 80 caracteres",
   "slug": "slug-url-amigable-en-kebab-case",
-  "excerpt": "Un resumen breve de 2 oraciones para la portada",
+  "excerpt": "Resumen conciso y sustancioso de 2 oraciones para la portada",
   "category": "Una de: ATP, WTA, Grand Slams, Tenis Argentino, Análisis Táctico",
   "readTime": "4 min",
-  "content": "<p>Primer párrafo de introducción y contexto...</p><h2>Subtítulo de análisis</h2><p>Segundo párrafo con estadísticas, impacto en el ranking ATP y sensaciones...</p><h2>Lo que se viene</h2><p>Tercer párrafo con próximos desafíos y conclusión...</p>"
+  "content": "<p>Párrafo 1: Cobertura del hecho, nombres de los protagonistas y contexto...</p><h2>Claves del encuentro y rendimiento</h2><p>Párrafo 2: Detalles técnicos, saques, quiebres y estadísticas del partido...</p><h2>Impacto en el Ranking y lo que sigue</h2><p>Párrafo 3: Cómo repercute en los puntos de la tabla ATP/WTA y el próximo rival...</p>"
 }
 
 Requisitos estrictos:
-1. Mínimo 350 palabras dentro de "content".
-2. Redacción 100% original con tono profesional.
-3. El campo "content" debe ser HTML válido usando <p>, <h2>, <strong> y <ul> si corresponde.
-4. Responde ÚNICAMENTE con el objeto JSON.
+1. Mínimo 400 palabras en el campo "content".
+2. Redacción 100% original en español rioplatense neutro con calidad editorial.
+3. El campo "content" debe ser HTML limpio con <p>, <h2>, <strong> y <ul> si aplica.
+4. Responde ÚNICAMENTE con el JSON.
 `;
 
   const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`;
@@ -93,12 +101,14 @@ Requisitos estrictos:
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
       contents: [{ parts: [{ text: prompt }] }],
-      generationConfig: { temperature: 0.7, maxOutputTokens: 2000 }
+      tools: [{ google_search: {} }],
+      generationConfig: { temperature: 0.7, maxOutputTokens: 2500 }
     })
   });
 
   if (!response.ok) {
-    throw new Error(`Gemini API Error: ${response.status} ${response.statusText}`);
+    const errText = await response.text();
+    throw new Error(`Gemini API Error: ${response.status} ${response.statusText} - ${errText}`);
   }
 
   const data = await response.json();
@@ -107,30 +117,6 @@ Requisitos estrictos:
   // Limpiar posibles bloques markdown ```json ... ```
   const cleanJson = rawText.replace(/```json/gi, '').replace(/```/g, '').trim();
   return JSON.parse(cleanJson);
-}
-
-// Generador de respaldo si no hay API Key de Gemini
-function generateFallbackArticle(newsItem) {
-  const slug = newsItem.title
-    .toLowerCase()
-    .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/(^-|-$)/g, '');
-
-  return {
-    title: newsItem.title,
-    slug: slug.substring(0, 70),
-    excerpt: `Repaso detallado y análisis sobre las novedades más recientes en el circuito internacional: ${newsItem.title}.`,
-    category: 'ATP',
-    readTime: '3 min',
-    content: `
-      <p>El circuito profesional no detiene su marcha y cada jornada de competencia ofrece momentos cruciales para los jugadores que buscan escalar posiciones en el escalafón mundial. En esta oportunidad, <strong>${newsItem.title}</strong> se posiciona como uno de los temas más comentados de la fecha.</p>
-      <h2>Impacto en el Ranking y rendimiento</h2>
-      <p>Cada victoria en esta instancia resulta determinante para la suma de puntos en la tabla rodante de 52 semanas. Mantener la regularidad táctica y la eficacia con el primer servicio resultan las variables indispensables para sostenerse en la élite del deporte de raqueta.</p>
-      <h2>Expectativas y próximos compromisos</h2>
-      <p>Con la mirada puesta en las siguientes rondas del certamen, los aficionados siguen de cerca el desarrollo de cada cruce a través de DobleFalta con marcadores punto a punto y estadísticas actualizadas minuto a minuto.</p>
-    `
-  };
 }
 
 async function main() {
