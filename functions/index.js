@@ -6,7 +6,7 @@ const fetch = require('node-fetch');
 // Guardando la llave en el backend. 
 // Para ser 100% estrictos se usa Google Secret Manager, pero tenerla acá escrita
 // YA soluciona el problema crítico: jamás llegará al navegador del usuario.
-const TENNIS_API_KEY = "7008b428b2fe82e9d128a01fee42f16d6f4cf158e061da1c99ba52b6a98fc224";
+const TENNIS_API_KEY = "7ae1bf3cbb989fe80c18917c0ba4ff9096c64a17eb4031cfec43dfee1be3d4f3";
 const TENNIS_API_URL = "https://api.api-tennis.com/tennis/";
 
 exports.tennisapi = onRequest({

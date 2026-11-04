@@ -15,7 +15,7 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
 // 2. Configuración de API Tennis y Gemini
-const TENNIS_API_KEY = process.env.TENNIS_API_KEY || 'd46d92e3827836bf3ce38f94eda654e1769077e4ed7e044eeae45fbbfa8f0024';
+const TENNIS_API_KEY = process.env.TENNIS_API_KEY || '7ae1bf3cbb989fe80c18917c0ba4ff9096c64a17eb4031cfec43dfee1be3d4f3';
 const TENNIS_API_URL = 'https://api.api-tennis.com/tennis/';
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 
