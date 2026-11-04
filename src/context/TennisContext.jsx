@@ -107,14 +107,24 @@ export const TennisProvider = ({ children }) => {
       
       const combinedMap = {};
       if (atpRes.success === 1 && atpRes.result) {
-        setAtpRankings(atpRes.result);
-        atpRes.result.forEach(r => {
+        const sortedAtp = [...atpRes.result].sort((a, b) => {
+          const placeA = parseInt(a.place, 10) || 999999;
+          const placeB = parseInt(b.place, 10) || 999999;
+          return placeA - placeB;
+        });
+        setAtpRankings(sortedAtp);
+        sortedAtp.forEach(r => {
           if (r.player_key) combinedMap[r.player_key.toString()] = r.place;
         });
       }
       if (wtaRes.success === 1 && wtaRes.result) {
-        setWtaRankings(wtaRes.result);
-        wtaRes.result.forEach(r => {
+        const sortedWta = [...wtaRes.result].sort((a, b) => {
+          const placeA = parseInt(a.place, 10) || 999999;
+          const placeB = parseInt(b.place, 10) || 999999;
+          return placeA - placeB;
+        });
+        setWtaRankings(sortedWta);
+        sortedWta.forEach(r => {
           if (r.player_key) combinedMap[r.player_key.toString()] = r.place;
         });
       }
