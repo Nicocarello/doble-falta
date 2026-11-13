@@ -10,6 +10,10 @@ on:
         description: 'Fecha a procesar (YYYY-MM-DD, dejar vacío para ayer)'
         required: false
         default: ''
+      backfill_days:
+        description: 'Cantidad de días hacia atrás a regenerar (opcional, ej: 15)'
+        required: false
+        default: ''
 
 jobs:
   generate-news:
@@ -31,5 +35,6 @@ jobs:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           FIREBASE_API_KEY: ${{ secrets.FIREBASE_API_KEY }}
           TARGET_DATE: ${{ github.event.inputs.target_date }}
+          BACKFILL_DAYS: ${{ github.event.inputs.backfill_days }}
         run: node scripts/generate_news.js
 

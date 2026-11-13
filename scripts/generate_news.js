@@ -164,36 +164,58 @@ Resultados oficiales de los tenistas argentinos en la jornada:
 ${matchSummaryText}
 
 Escribe una crónica periodística extensa, original y profunda en español rioplatense neutro.
-Responde únicamente con este objeto JSON válido (sin bloques markdown):
+Responde únicamente con este objeto JSON válido:
 {
   "title": "Título periodístico único nombrando a los ganadores destacados y torneos (máximo 85 caracteres)",
   "slug": "resumen-argentinos-${dateStr}",
   "excerpt": "Resumen de 2 oraciones precisas destacando las figuras, torneos y el balance numérico de la fecha.",
   "category": "Tenis Argentino",
   "readTime": "5 min",
-  "content": "<p>Crónica completa en HTML con subtítulos <h2>...</p>"
+  "content": "<p>Crónica completa en HTML con subtítulos <h2> y <h3>...</p>"
 }
-Requisitos: Mínimo 500 palabras en "content", analizando partidos por torneo, sets, tiebreaks y contexto del circuito.
+Requisitos:
+1. Mínimo 550 palabras en "content".
+2. Analiza los partidos agrupando por torneo, destacando sets, tiebreaks, actuación en singles y dobles, y contexto del circuito.
+3. Usa etiquetas HTML limpias (<p>, <h2>, <h3>, <strong>, <em>, <ul>, <li>).
 `;
 
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`;
-  const response = await fetch(url, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      contents: [{ parts: [{ text: prompt }] }],
-      generationConfig: { temperature: 0.7, maxOutputTokens: 2500 }
-    })
-  });
+  const models = ['gemini-2.5-flash', 'gemini-2.0-flash'];
+  let lastError = null;
 
-  if (!response.ok) {
-    throw new Error(`Gemini API Error: ${response.status} ${response.statusText}`);
+  for (const model of models) {
+    try {
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${GEMINI_API_KEY}`;
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: prompt }] }],
+          generationConfig: {
+            temperature: 0.7,
+            maxOutputTokens: 3500,
+            responseMimeType: 'application/json'
+          }
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error(`Gemini API Error (${model}): ${response.status} ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      const rawText = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+      const cleanJson = rawText.replace(/```json/gi, '').replace(/```/g, '').trim();
+      const parsed = JSON.parse(cleanJson);
+      if (parsed && parsed.title && parsed.content) {
+        return parsed;
+      }
+    } catch (err) {
+      lastError = err;
+      console.warn(`⚠️ Intento con ${model} falló: ${err.message}`);
+    }
   }
 
-  const data = await response.json();
-  const rawText = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
-  const cleanJson = rawText.replace(/```json/gi, '').replace(/```/g, '').trim();
-  return JSON.parse(cleanJson);
+  throw lastError || new Error('No se pudo generar con Gemini');
 }
 
 // Redactor periodístico avanzado que construye crónicas únicas, extensas y analíticas basadas en los datos reales del día
@@ -353,8 +375,13 @@ async function processDate(targetDate) {
 
   let article;
   if (GEMINI_API_KEY) {
-    console.log('🤖 Redactando crónica periodística profunda con Gemini AI...');
-    article = await generateEditorialWithGemini(targetDate, humanDate, argMatches);
+    try {
+      console.log('🤖 Redactando crónica periodística profunda con Gemini AI...');
+      article = await generateEditorialWithGemini(targetDate, humanDate, argMatches);
+    } catch (geminiErr) {
+      console.warn('⚠️ Respaldo activado tras error de Gemini:', geminiErr.message);
+      article = generateRichJournalisticChronicle(targetDate, humanDate, argMatches);
+    }
   } else {
     console.log('📝 Redactando crónica periodística extensa y analítica por torneo...');
     article = generateRichJournalisticChronicle(targetDate, humanDate, argMatches);
@@ -379,7 +406,7 @@ async function processDate(targetDate) {
 async function main() {
   console.log('🎾 Iniciando Generador de Crónicas Periodísticas: Tenistas Argentinos...');
 
-  const backfillArg = process.argv.find(arg => arg.startsWith('--backfill='))?.split('=')[1];
+  const backfillArg = process.argv.find(arg => arg.startsWith('--backfill='))?.split('=')[1] || process.env.BACKFILL_DAYS;
   const cliDate = process.argv.find(arg => arg.startsWith('--date='))?.split('=')[1];
 
   try {
