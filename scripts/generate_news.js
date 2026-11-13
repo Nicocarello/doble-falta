@@ -2,7 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { initializeApp } from 'firebase/app';
-import { getFirestore, doc, setDoc } from 'firebase/firestore';
+import { getFirestore, doc, setDoc, collection, getDocs } from 'firebase/firestore';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -610,6 +610,17 @@ async function main() {
   const cliDate = process.argv.find(arg => arg.startsWith('--date='))?.split('=')[1];
 
   try {
+    // Cargar imágenes ya utilizadas en Firestore para no repetir la misma foto si un tenista gana varios días seguidos
+    try {
+      const existingSnap = await getDocs(collection(db, 'news'));
+      existingSnap.docs.forEach(d => {
+        const img = d.data()?.imageUrl;
+        if (img) usedImagesInRun.add(img);
+      });
+    } catch (e) {
+      console.warn('⚠️ No se pudieron precargar imágenes previas:', e.message);
+    }
+
     if (backfillArg) {
       const days = parseInt(backfillArg, 10) || 15;
       console.log(`🔄 Ejecutando actualización retroactiva de los últimos ${days} días...`);
