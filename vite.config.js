@@ -8,6 +8,10 @@ export default defineConfig({
     VitePWA({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.svg', 'logo.png', 'logo-horizontal.svg'],
+      workbox: {
+        globPatterns: ['**/*.{js,css,ico,png,svg,webmanifest}', 'index.html'],
+        navigateFallback: '/index.html'
+      },
       manifest: {
         name: 'Doble Falta',
         short_name: 'DobleFalta',

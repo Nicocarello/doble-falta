@@ -18,6 +18,8 @@ on:
 jobs:
   generate-news:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - name: Checkout del repositorio
         uses: actions/checkout@v4
@@ -37,4 +39,11 @@ jobs:
           TARGET_DATE: ${{ github.event.inputs.target_date }}
           BACKFILL_DAYS: ${{ github.event.inputs.backfill_days }}
         run: node scripts/generate_news.js
+
+      - name: Actualizar sitemap.xml en el repositorio si hubo nueva noticia
+        run: |
+          git config user.name "DobleFalta Bot"
+          git config user.email "bot@doblefaltatenis.com.ar"
+          git add public/sitemap.xml
+          git diff --staged --quiet || (git commit -m "chore(seo): update sitemap.xml with latest Argentine tennis news" && git push)
 

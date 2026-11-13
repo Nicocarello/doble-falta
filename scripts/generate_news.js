@@ -1,5 +1,28 @@
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import { initializeApp } from 'firebase/app';
 import { getFirestore, doc, setDoc } from 'firebase/firestore';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const SITEMAP_PATH = path.resolve(__dirname, '../public/sitemap.xml');
+
+function ensureUrlInSitemap(slug, dateStr) {
+  try {
+    if (!fs.existsSync(SITEMAP_PATH)) return;
+    const xml = fs.readFileSync(SITEMAP_PATH, 'utf-8');
+    const targetUrl = `https://doblefaltatenis.com.ar/noticias/${slug}`;
+    if (xml.includes(targetUrl)) return;
+
+    const newEntry = `  <url>\n    <loc>${targetUrl}</loc>\n    <lastmod>${dateStr}</lastmod>\n    <changefreq>weekly</changefreq>\n    <priority>0.8</priority>\n  </url>\n`;
+    const updatedXml = xml.replace('</urlset>', `${newEntry}</urlset>`);
+    fs.writeFileSync(SITEMAP_PATH, updatedXml, 'utf-8');
+    console.log(`🗺️ Sitemap actualizado con: ${targetUrl}`);
+  } catch (err) {
+    console.warn('⚠️ No se pudo actualizar public/sitemap.xml:', err.message);
+  }
+}
 
 // 1. Configuración de Firebase
 const firebaseConfig = {
@@ -399,6 +422,7 @@ async function processDate(targetDate) {
 
   console.log(`💾 Guardando en Firestore colección 'news' con ID: ${docId}`);
   await setDoc(doc(db, 'news', docId), finalDoc);
+  ensureUrlInSitemap(docId, targetDate);
   console.log(`✅ Guardado: "${finalDoc.title}" (${finalDoc.content.length} caracteres)`);
   return true;
 }

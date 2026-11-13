@@ -1,36 +1,39 @@
-import React, { useState, useEffect } from 'react'
-import { Routes, Route, Link, useNavigate, useParams, useLocation } from 'react-router-dom'
+import React, { useState, Suspense, lazy } from 'react'
+import { Routes, Route, Link, useNavigate } from 'react-router-dom'
 import './App.css'
 
 import { MASTER_TOURNAMENTS } from './constants/tennis'
 import { useTennis } from './context/TennisContext'
 
+// Portada de carga inmediata para optimizar LCP (Core Web Vitals)
 import Home from './pages/Home'
-import MatchDetail from './pages/MatchDetail'
-import TournamentList from './pages/TournamentList'
-import TournamentDetail from './pages/TournamentDetail'
-import Ranking from './pages/Ranking'
-import LiveRanking from './pages/LiveRanking'
-import Privacy from './pages/Privacy'
-import Terms from './pages/Terms'
-import About from './pages/About'
-import Contact from './pages/Contact'
-import NotFound from './pages/NotFound'
-import Community from './pages/Community'
-import CommunityThread from './pages/CommunityThread'
-import NewTopic from './pages/NewTopic'
-import Games from './pages/Games'
-import GameGuessPlayer from './pages/GameGuessPlayer'
-import GameWordle from './pages/GameWordle'
-import GameTop10 from './pages/GameTop10'
-import GameH2H from './pages/GameH2H'
-import HeadToHead from './pages/HeadToHead'
-import PlayerDetail from './pages/PlayerDetail'
-import NewsList from './pages/NewsList'
-import NewsDetail from './pages/NewsDetail'
 import SuggestionModal from './components/SuggestionModal'
 import Footer from './components/common/Footer'
 import CookieConsent from './components/CookieConsent'
+
+// Rutas secundarias con Code-Splitting (React.lazy)
+const MatchDetail = lazy(() => import('./pages/MatchDetail'))
+const TournamentList = lazy(() => import('./pages/TournamentList'))
+const TournamentDetail = lazy(() => import('./pages/TournamentDetail'))
+const Ranking = lazy(() => import('./pages/Ranking'))
+const LiveRanking = lazy(() => import('./pages/LiveRanking'))
+const Privacy = lazy(() => import('./pages/Privacy'))
+const Terms = lazy(() => import('./pages/Terms'))
+const About = lazy(() => import('./pages/About'))
+const Contact = lazy(() => import('./pages/Contact'))
+const NotFound = lazy(() => import('./pages/NotFound'))
+const Community = lazy(() => import('./pages/Community'))
+const CommunityThread = lazy(() => import('./pages/CommunityThread'))
+const NewTopic = lazy(() => import('./pages/NewTopic'))
+const Games = lazy(() => import('./pages/Games'))
+const GameGuessPlayer = lazy(() => import('./pages/GameGuessPlayer'))
+const GameWordle = lazy(() => import('./pages/GameWordle'))
+const GameTop10 = lazy(() => import('./pages/GameTop10'))
+const GameH2H = lazy(() => import('./pages/GameH2H'))
+const HeadToHead = lazy(() => import('./pages/HeadToHead'))
+const PlayerDetail = lazy(() => import('./pages/PlayerDetail'))
+const NewsList = lazy(() => import('./pages/NewsList'))
+const NewsDetail = lazy(() => import('./pages/NewsDetail'))
 
 function App() {
   const navigate = useNavigate()
@@ -192,33 +195,35 @@ function App() {
           </aside>
 
           <div className="layout_mainBlockContent">
-            <Routes>
-              <Route path="/" element={<Home />} />
-              <Route path="/match/:matchId" element={<MatchDetail />} />
-              <Route path="/category/:categoryId" element={<TournamentList />} />
-              <Route path="/tournament/:categoryId/:tournamentId" element={<TournamentDetail />} />
-              <Route path="/ranking" element={<Ranking />} />
-              <Route path="/ranking/en-vivo" element={<LiveRanking />} />
-              <Route path="/privacy" element={<Privacy />} />
-              <Route path="/terms" element={<Terms />} />
-              <Route path="/about" element={<About />} />
-              <Route path="/contact" element={<Contact />} />
-              {/* Rutas de noticias y crónicas */}
-              <Route path="/noticias" element={<NewsList />} />
-              <Route path="/noticias/:slug" element={<NewsDetail />} />
-              {/* Rutas de comunidad */}
-              <Route path="/comunidad" element={<Community />} />
-              <Route path="/comunidad/nuevo" element={<NewTopic />} />
-              <Route path="/comunidad/:threadId" element={<CommunityThread />} />
-              <Route path="/juegos" element={<Games />} />
-              <Route path="/juegos/adivina" element={<GameGuessPlayer />} />
-              <Route path="/juegos/tenisdle" element={<GameWordle />} />
-              <Route path="/juegos/top10" element={<GameTop10 />} />
-              <Route path="/juegos/racha-h2h" element={<GameH2H />} />
-              <Route path="/jugador/:id" element={<PlayerDetail />} />
-              <Route path="/h2h" element={<HeadToHead />} />
-              <Route path="*" element={<NotFound />} />
-            </Routes>
+            <Suspense fallback={<div style={{ padding: '50px 20px', textAlign: 'center', color: '#aaa' }}>Cargando sección...</div>}>
+              <Routes>
+                <Route path="/" element={<Home />} />
+                <Route path="/match/:matchId" element={<MatchDetail />} />
+                <Route path="/category/:categoryId" element={<TournamentList />} />
+                <Route path="/tournament/:categoryId/:tournamentId" element={<TournamentDetail />} />
+                <Route path="/ranking" element={<Ranking />} />
+                <Route path="/ranking/en-vivo" element={<LiveRanking />} />
+                <Route path="/privacy" element={<Privacy />} />
+                <Route path="/terms" element={<Terms />} />
+                <Route path="/about" element={<About />} />
+                <Route path="/contact" element={<Contact />} />
+                {/* Rutas de noticias y crónicas */}
+                <Route path="/noticias" element={<NewsList />} />
+                <Route path="/noticias/:slug" element={<NewsDetail />} />
+                {/* Rutas de comunidad */}
+                <Route path="/comunidad" element={<Community />} />
+                <Route path="/comunidad/nuevo" element={<NewTopic />} />
+                <Route path="/comunidad/:threadId" element={<CommunityThread />} />
+                <Route path="/juegos" element={<Games />} />
+                <Route path="/juegos/adivina" element={<GameGuessPlayer />} />
+                <Route path="/juegos/tenisdle" element={<GameWordle />} />
+                <Route path="/juegos/top10" element={<GameTop10 />} />
+                <Route path="/juegos/racha-h2h" element={<GameH2H />} />
+                <Route path="/jugador/:id" element={<PlayerDetail />} />
+                <Route path="/h2h" element={<HeadToHead />} />
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </Suspense>
           </div>
         </div>
       </main>
