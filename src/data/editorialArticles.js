@@ -11,7 +11,7 @@ export const SEED_NEWS = [
     readTime: '7 min',
     publishedAt: '2026-10-28',
     author: 'Redacción DobleFalta',
-    imageUrl: 'https://images.unsplash.com/photo-1595435934249-5df7ed86e1c0?auto=format&fit=crop&w=900&q=80',
+    imageUrl: 'https://e0.365dm.com/25/11/1600x900/skysports-carlos-alcaraz-jannik_7083586.jpg?20251116195554',
     content: `
       <p>El Ranking oficial de la ATP (Asociación de Tenistas Profesionales) y de la WTA (Women's Tennis Association) es mucho más que una tabla de posiciones: es el mecanismo matemático y mérito deportivo que define quién ingresa directamente a los cuadros principales de los torneos, quiénes deben atravesar la exigente fase de clasificación (qualy) y cómo se distribuyen los cabezas de serie para evitar que las máximas figuras se enfrenten en las primeras rondas.</p>
       
@@ -47,7 +47,7 @@ export const SEED_NEWS = [
     readTime: '6 min',
     publishedAt: '2026-10-26',
     author: 'Redacción DobleFalta',
-    imageUrl: 'https://images.unsplash.com/photo-1554068865-24cecd4e34b8?auto=format&fit=crop&w=900&q=80',
+    imageUrl: 'https://www.lanacion.com.ar/resizer/v2/el-tenista-argentino-francisco-cerundolo-42FPE22CINAWLIQUFY4VWGQVJM.jpeg?auth=332bdf3e2e95f99f8c3818d13387b5adbb9e2ee2d148c53d6447b213e8de8285&width=1200&height=800&quality=70&smart=false&focal=473,257',
     content: `
       <p>Hablar del tenis argentino en la década de 2020 es hablar de resiliencia, método de trabajo y una inagotable capacidad de regeneración competitiva. Tras el retiro progresivo de la generación que conquistó la Copa Davis en 2016 y de referentes como Juan Martín del Potro y Diego Schwartzman, muchos analistas se preguntaban cuánto tiempo tardaría el país en volver a poblar la primera página del ranking mundial. La respuesta llegó desde las canchas de los clubes formadores: una camada prolífica nacida entre 1999 y 2002 tomó la posta con autoridad.</p>
 
@@ -73,7 +73,7 @@ export const SEED_NEWS = [
     readTime: '7 min',
     publishedAt: '2026-10-24',
     author: 'Redacción DobleFalta',
-    imageUrl: 'https://images.unsplash.com/photo-1530915534664-4ac642379740?auto=format&fit=crop&w=900&q=80',
+    imageUrl: 'https://www.vanguardia.com/resizer/v2/PVR2XT3X3BEFBHCRPO5XOOFTDA.jpg?auth=50333a9f49b893351fb04495f3fb067afabc7c8f82318f260a4746e11a4b56d9&smart=true&width=1200&height=800&quality=70',
     content: `
       <p>El tenis profesional posee una particularidad única dentro del deporte de alta competencia: mientras el campo de juego mide exactamente lo mismo (23,77 metros de largo por 8,23 metros de ancho en singles) en todos los rincones del planeta, el material sobre el que pica la pelota transforma radicalmente las leyes de la física, las demandas fisiológicas y el libreto táctico de los jugadores.</p>
 
@@ -99,7 +99,7 @@ export const SEED_NEWS = [
     readTime: '8 min',
     publishedAt: '2026-10-22',
     author: 'Redacción DobleFalta',
-    imageUrl: 'https://images.unsplash.com/photo-1622279457486-62dcc4a431d6?auto=format&fit=crop&w=900&q=80',
+    imageUrl: 'https://assets.tennismajors.com/uploads/2021/01/panoramic_PANORGTENARCH160562015.094-1024x539.jpg',
     content: `
       <p>Si hoy la Argentina cuenta con decenas de jugadores compitiendo cada semana en torneos ATP, WTA y Challenger alrededor del planeta, la explicación histórica tiene un punto de partida indiscutible: <strong>Guillermo Vilas</strong>. En la década de 1970, el joven zurdo criado en Mar del Plata transformó para siempre la cultura deportiva nacional, llevando al tenis desde los clubes tradicionales hacia cada barrio y rincón del país.</p>
 
@@ -123,7 +123,7 @@ export const SEED_NEWS = [
     readTime: '7 min',
     publishedAt: '2026-10-20',
     author: 'Redacción DobleFalta',
-    imageUrl: 'https://images.unsplash.com/photo-1542144582-1ba00456b5e3?auto=format&fit=crop&w=900&q=80',
+    imageUrl: 'https://i.pinimg.com/736x/39/56/c7/3956c76ec3fffc75212a23ee708ca06c.jpg',
     content: `
       <p>En la era más competitiva de toda la historia del tenis masculino, dominada con puño de hierro por Roger Federer, Rafael Nadal y Novak Djokovic, hubo un gigante de 1,98 metros nacido en Tandil que logró mirarlos a los ojos y derrotarlos en los escenarios más imponentes del planeta. <strong>Juan Martín del Potro</strong> no solo dejó una huella imborrable por su talento descomunal, sino por una resiliencia sobrehumana frente a las lesiones de muñeca y rodilla.</p>
 
@@ -148,7 +148,7 @@ export const SEED_NEWS = [
     readTime: '7 min',
     publishedAt: '2026-10-18',
     author: 'Redacción DobleFalta',
-    imageUrl: 'https://images.unsplash.com/photo-1511067007398-7e4b90cfa4bc?auto=format&fit=crop&w=900&q=80',
+    imageUrl: 'https://www.lavoz.com.ar/resizer/v2/R7NOQWJGDND7JD5G4O5ZITOWEM.jpg?width=630&quality=75&smart=true',
     content: `
       <p>Durante casi un siglo, la Copa Davis fue la gran obsesión y la herida abierta del tenis argentino. Cuatro generaciones distintas habían acariciado la Ensaladera de Plata sin poder levantarla: Vilas y Clerc en Cincinnati 1981; Nalbandian, Calleri, Acasuso y Chela en Moscú 2006; la dolorosa final de Mar del Plata 2008; y la batalla de Sevilla en 2011. Todo cambió en la temporada 2016, cuando un grupo unido bajo la conducción serena de <strong>Daniel Orsanic</strong> escribió la página más gloriosa del tenis nacional.</p>
 
@@ -170,7 +170,7 @@ export const SEED_NEWS = [
     readTime: '7 min',
     publishedAt: '2026-10-16',
     author: 'Redacción DobleFalta',
-    imageUrl: 'https://images.unsplash.com/photo-1587280501635-68a0e82cd5ff?auto=format&fit=crop&w=900&q=80',
+    imageUrl: 'https://i.pinimg.com/originals/3e/0b/5f/3e0b5f26a7ab81c0f58680b88264e44c.jpg',
     content: `
       <p>El tenis femenino argentino posee una rica tradición de talento, carisma y conquistas en los mayores escenarios del planeta. A lo largo de las últimas cuatro décadas, las jugadoras nacionales han protagonizado gestas inolvidables que inspiraron a miles de jóvenes a empuñar una raqueta en los clubes de todo el país.</p>
 
@@ -194,7 +194,7 @@ export const SEED_NEWS = [
     readTime: '6 min',
     publishedAt: '2026-10-14',
     author: 'Redacción DobleFalta',
-    imageUrl: 'https://images.unsplash.com/photo-1576610616656-d3aa5d1f4534?auto=format&fit=crop&w=900&q=80',
+    imageUrl: 'https://www.lanacion.com.ar/resizer/v2/camilo-ugo-carabelli-con-el-trofeo-de-campeon-del-56KBQOLMAFCCRH234L4KGFLSEQ.jpg?auth=52a8f37df2cd33476a0740796b115fb3e5d39de4e4c97a2238562022d732851f&width=1200&height=800&quality=70&smart=true',
     content: `
       <p>Detrás de las luces de los estadios centrales de París, Londres o Nueva York existe un ecosistema feroz, apasionante y decisivo para la carrera de cualquier tenista profesional: el <strong>ATP Challenger Tour</strong>. Para los jugadores argentinos y sudamericanos, este circuito representa el puente indispensable entre las promesas juveniles y la consolidación económica y deportiva dentro de los 100 mejores del planeta.</p>
 
@@ -219,7 +219,7 @@ export const SEED_NEWS = [
     readTime: '6 min',
     publishedAt: '2026-10-12',
     author: 'Redacción DobleFalta',
-    imageUrl: 'https://images.unsplash.com/photo-1560012057-4372e14c5085?auto=format&fit=crop&w=900&q=80',
+    imageUrl: 'https://www.baltc.net/wp-content/uploads/2016/09/courtvilas.jpg',
     content: `
       <p>Cada mes de febrero, cuando el calor del verano porteño cae sobre los bosques de Palermo, las tribunas del histórico <strong>Buenos Aires Lawn Tennis Club (BALTC)</strong> vuelven a latir con uno de los certámenes de mayor tradición en el mundo del deporte blanco: el <strong>Argentina Open</strong>. Con raíces que se remontan a finales del siglo XIX y consolidado en la Era Abierta como una parada emblemática del ATP Tour sobre polvo de ladrillo, el torneo porteño es considerado unánimemente como "La Catedral del tenis sudamericano".</p>
 
@@ -242,7 +242,7 @@ export const SEED_NEWS = [
     readTime: '7 min',
     publishedAt: '2026-10-10',
     author: 'Redacción DobleFalta',
-    imageUrl: 'https://images.unsplash.com/photo-1599586120429-48281b6f0ece?auto=format&fit=crop&w=900&q=80',
+    imageUrl: 'https://i.pinimg.com/originals/4e/ab/e2/4eabe21a8d57e2f17b9c7dea0b1a47ce.jpg',
     content: `
       <p>Entre los años 2001 y 2008, el tenis mundial vivió un fenómeno deportivo sin precedentes en Sudamérica: la explosión de la llamada <strong>"Legión Argentina"</strong>. Un grupo de más de quince jugadores contemporáneos, formados en el rigor del circuito satélite y Challenger de los años noventa, asaltó la élite de la ATP hasta convertir al país en la nación más dominante de los cuadros principales junto con España y Estados Unidos.</p>
 
@@ -267,7 +267,7 @@ export const SEED_NEWS = [
     readTime: '6 min',
     publishedAt: '2026-10-08',
     author: 'Redacción DobleFalta',
-    imageUrl: 'https://images.unsplash.com/photo-1551958219-acbc608c6377?auto=format&fit=crop&w=900&q=80',
+    imageUrl: 'https://laopinionaustral.com.ar/media/uploads/2024/07/francisco-cerundolo-430.123123-OG.jpg',
     content: `
       <p>Cuando observamos la planilla de estadísticas de un partido en vivo en <strong>DobleFalta</strong>, es habitual que la mirada vaya primero a la cantidad de <em>aces</em> o de errores no forzados. Sin embargo, los analistas de datos de los equipos técnicos del circuito ATP y WTA saben que el verdadero desenlace de un encuentro se esconde en tres indicadores específicos.</p>
 
@@ -291,7 +291,7 @@ export const SEED_NEWS = [
     readTime: '6 min',
     publishedAt: '2026-10-06',
     author: 'Redacción DobleFalta',
-    imageUrl: 'https://images.unsplash.com/photo-1519311965067-36d3e5f33d39?auto=format&fit=crop&w=900&q=80',
+    imageUrl: 'https://www.lanacion.com.ar/resizer/v2/horacio-zeballos-gano-en-el-masters-1000-de-miami-U7BVARN2LJBYBCEJWDB73H7WCQ.jpeg?auth=3fa2e1b04b2739c9ff6cea88c0db1de5d536d9fd741557b0530716d44c348674&width=1200&height=800&quality=70&smart=true',
     content: `
       <p>Si bien la escuela argentina se caracterizó históricamente por formar grandes batalladores desde el fondo de la cancha para la modalidad individual, la última década produjo una auténtica edad de oro en el circuito mundial de dobles masculino, llevando a representantes albicelestes a lo más alto del escalafón de la ATP.</p>
 
@@ -315,7 +315,7 @@ export const SEED_NEWS = [
     readTime: '6 min',
     publishedAt: '2026-10-04',
     author: 'Redacción DobleFalta',
-    imageUrl: 'https://images.unsplash.com/photo-1517649763962-0c623066013b?auto=format&fit=crop&w=900&q=80',
+    imageUrl: 'https://www.newsdigitales.com/uploads/ckeditor/2026/04/20260428212533_frana-tomas.png',
     content: `
       <p>Cuando un espectador enciende la pantalla o revisa el marcador en directo de un partido de tenis, observa únicamente la punta del iceberg: dos horas y media de impactos a alta velocidad. Sin embargo, la estructura que sostiene a un tenista profesional durante un calendario de diez meses y medio de competencia continua exige una ingeniería física, nutricional y psicológica de altísima precisión.</p>
 
@@ -339,7 +339,7 @@ export const SEED_NEWS = [
     readTime: '6 min',
     publishedAt: '2026-10-02',
     author: 'Redacción DobleFalta',
-    imageUrl: 'https://images.unsplash.com/photo-1580136579312-94651dfd596d?auto=format&fit=crop&w=900&q=80',
+    imageUrl: 'https://images.estadiodeportivo.com/imagenes/75e9e425-a6e2-494f-81c2-96517a010791_1280x720.jpeg',
     content: `
       <p>Aunque el tenis es célebre por custodiar celosamente sus tradiciones centenarias —como el código de vestimenta blanco en Wimbledon o el sistema de puntuación 15, 30, 40—, las entidades rectoras del deporte (ITF, ATP, WTA y los cuatro Grand Slams) han implementado en los últimos años una serie de reformas reglamentarias profundas orientadas a agilizar el juego, proteger la salud de los atletas y eliminar los fallos arbitrales dudosos.</p>
 
@@ -363,7 +363,7 @@ export const SEED_NEWS = [
     readTime: '6 min',
     publishedAt: '2026-09-29',
     author: 'Redacción DobleFalta',
-    imageUrl: 'https://images.unsplash.com/photo-1508804185872-d7badad00f7d?auto=format&fit=crop&w=900&q=80',
+    imageUrl: 'https://www.domusweb.it/content/dam/domusweb/it/architecture/gallery/2024/11/11/atp-finals-torino/gallery/domus-ATP-turin-camerana-2.jpg.foto.rmedium.jpg',
     content: `
       <p>Entender el calendario anual del tenis profesional es recorrer el mapa mundial siguiendo las estaciones climáticas. A lo largo de once meses ininterrumpidos, desde los primeros días de enero hasta mediados de noviembre, la caravana de la ATP y la WTA atraviesa siete etapas bien definidas, cada una con su propia superficie, pelotas y desafíos estratégicos.</p>
 

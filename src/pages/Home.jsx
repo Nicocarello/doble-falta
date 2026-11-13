@@ -357,6 +357,7 @@ const Home = () => {
                     alt={item.title}
                     style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                     loading="lazy"
+                    referrerPolicy="no-referrer"
                   />
                   <span style={{
                     position: 'absolute',

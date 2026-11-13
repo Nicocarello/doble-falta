@@ -177,6 +177,7 @@ const NewsDetail = () => {
             src={article.imageUrl}
             alt={article.title}
             style={{ width: '100%', maxHeight: '420px', objectFit: 'cover' }}
+            referrerPolicy="no-referrer"
           />
         </div>
       )}

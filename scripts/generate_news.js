@@ -8,22 +8,6 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const SITEMAP_PATH = path.resolve(__dirname, '../public/sitemap.xml');
 
-function ensureUrlInSitemap(slug, dateStr) {
-  try {
-    if (!fs.existsSync(SITEMAP_PATH)) return;
-    const xml = fs.readFileSync(SITEMAP_PATH, 'utf-8');
-    const targetUrl = `https://doblefaltatenis.com.ar/noticias/${slug}`;
-    if (xml.includes(targetUrl)) return;
-
-    const newEntry = `  <url>\n    <loc>${targetUrl}</loc>\n    <lastmod>${dateStr}</lastmod>\n    <changefreq>weekly</changefreq>\n    <priority>0.8</priority>\n  </url>\n`;
-    const updatedXml = xml.replace('</urlset>', `${newEntry}</urlset>`);
-    fs.writeFileSync(SITEMAP_PATH, updatedXml, 'utf-8');
-    console.log(`🗺️ Sitemap actualizado con: ${targetUrl}`);
-  } catch (err) {
-    console.warn('⚠️ No se pudo actualizar public/sitemap.xml:', err.message);
-  }
-}
-
 // 1. Configuración de Firebase
 const firebaseConfig = {
   apiKey: process.env.FIREBASE_API_KEY || 'AIzaSyB91DcrQp1yz3pWsppvk0MiVkrngCopSy0',
@@ -42,23 +26,67 @@ const TENNIS_API_KEY = process.env.TENNIS_API_KEY || '7ae1bf3cbb989fe80c18917c0b
 const TENNIS_API_URL = 'https://api.api-tennis.com/tennis/';
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 
-// Galería curada de fotografías de tenis para variar visualmente cada crónica diaria
-const TENNIS_IMAGES = [
-  'https://images.unsplash.com/photo-1622279457486-62dcc4a431d6?auto=format&fit=crop&w=900&q=80',
-  'https://images.unsplash.com/photo-1595435934249-5df7ed86e1c0?auto=format&fit=crop&w=900&q=80',
-  'https://images.unsplash.com/photo-1554068865-24cecd4e34b8?auto=format&fit=crop&w=900&q=80',
-  'https://images.unsplash.com/photo-1530915534664-4ac642379740?auto=format&fit=crop&w=900&q=80',
-  'https://images.unsplash.com/photo-1542144582-1ba00456b5e3?auto=format&fit=crop&w=900&q=80',
-  'https://images.unsplash.com/photo-1511067007398-7e4b90cfa4bc?auto=format&fit=crop&w=900&q=80',
-  'https://images.unsplash.com/photo-1587280501635-68a0e82cd5ff?auto=format&fit=crop&w=900&q=80',
-  'https://images.unsplash.com/photo-1576610616656-d3aa5d1f4534?auto=format&fit=crop&w=900&q=80',
-  'https://images.unsplash.com/photo-1560012057-4372e14c5085?auto=format&fit=crop&w=900&q=80',
-  'https://images.unsplash.com/photo-1599586120429-48281b6f0ece?auto=format&fit=crop&w=900&q=80',
-  'https://images.unsplash.com/photo-1551958219-acbc608c6377?auto=format&fit=crop&w=900&q=80',
-  'https://images.unsplash.com/photo-1519311965067-36d3e5f33d39?auto=format&fit=crop&w=900&q=80'
+// Dominios de bancos con marcas de agua visibles que debemos excluir
+const WATERMARK_DOMAINS = [
+  'alamy.com', 'gettyimages.', 'shutterstock.', 'depositphotos.',
+  'dreamstime.', '123rf.', 'istockphoto.', 'vecteezy.', 'freepik.'
 ];
 
-// Lista exhaustiva de apellidos / nombres de tenistas argentinos (ATP, WTA, Challenger e ITF)
+// Respaldo de fotos reales de tenistas argentinos en competencia
+const FALLBACK_ARG_PHOTOS = [
+  'https://www.lanacion.com.ar/resizer/v2/el-tenista-argentino-francisco-cerundolo-42FPE22CINAWLIQUFY4VWGQVJM.jpeg?auth=332bdf3e2e95f99f8c3818d13387b5adbb9e2ee2d148c53d6447b213e8de8285&width=1200&height=800&quality=70&smart=false&focal=473,257',
+  'https://s.rfi.fr/media/display/b6ebb5b2-022b-11ee-968a-005056a90284/AP23152363662495.jpg',
+  'https://lagazzettadf.com/wp-content/uploads/2024/07/triunfo-epico-de-sebastian-baez-en-grand-slam-focus-0-0-1044-675.jpg',
+  'https://www.lanacion.com.ar/resizer/v2/camilo-ugo-carabelli-con-el-trofeo-de-campeon-del-56KBQOLMAFCCRH234L4KGFLSEQ.jpg?auth=52a8f37df2cd33476a0740796b115fb3e5d39de4e4c97a2238562022d732851f&width=1200&height=800&quality=70&smart=true',
+  'https://www.lanacion.com.ar/resizer/v2/el-desahogo-del-tenista-argentino-federico-coria-NB5NTFWUKBHS3C7N4TRRDPY7QY.JPG?auth=882489452911af0d41dd90ca5879f6861d5c14dbb868f7ef3a33a351872ac02b&width=1200&height=800&quality=70&smart=false&focal=1120,259',
+  'https://www.lanacion.com.ar/resizer/v2/julia-riera-al-saque-en-rabat-vive-la-mejor-PBA4W2LJPVGILCOL34SSWQL5N4.jpg?auth=1d9ff5bf3281d6e7e71a7ef15136f60dfd6d69d5d194cf37978833339bf6791b&width=1200&height=800&quality=70&smart=true'
+];
+
+// Diccionario de nombres completos para mejorar la precisión periodística y la búsqueda de fotos reales
+const PLAYER_FULL_NAMES = {
+  'f. cerundolo': 'Francisco Cerúndolo',
+  'j. m. cerundolo': 'Juan Manuel Cerúndolo',
+  's. baez': 'Sebastián Báez',
+  't. m. etcheverry': 'Tomás Martín Etcheverry',
+  'm. navone': 'Mariano Navone',
+  'f. comesana': 'Francisco Comesaña',
+  'c. ugo carabelli': 'Camilo Ugo Carabelli',
+  'f. diaz acosta': 'Facundo Díaz Acosta',
+  't. a. tirante': 'Thiago Agustín Tirante',
+  'f. coria': 'Federico Coria',
+  'd. schwartzman': 'Diego Schwartzman',
+  'j. p. ficovich': 'Juan Pablo Ficovich',
+  'n. kicker': 'Nicolás Kicker',
+  'g. villanueva': 'Gonzalo Villanueva',
+  'r. olivo': 'Renzo Olivo',
+  'h. casanova': 'Hernán Casanova',
+  'l. midon': 'Lautaro Midón',
+  'l. e. ambrogi': 'Luciano Ambrogi',
+  's. rodriguez taverna': 'Santiago Rodríguez Taverna',
+  'r. a. burruchaga': 'Román Burruchaga',
+  'r. burruchaga': 'Román Burruchaga',
+  'n. podoroska': 'Nadia Podoroska',
+  'm. l. carle': 'María Lourdes Carlé',
+  'j. riera': 'Julia Riera',
+  's. sierra': 'Solana Sierra',
+  'm. capurro taborda': 'Martina Capurro Taborda',
+  'j. ortenzi': 'Jazmín Ortenzi',
+  'h. zeballos': 'Horacio Zeballos',
+  'f. zeballos': 'Federico Zeballos',
+  'm. gonzalez': 'Máximo González',
+  'a. molteni': 'Andrés Molteni',
+  'f. bagnis': 'Facundo Bagnis',
+  'i. monzon': 'Ignacio Monzón',
+  't. farjat': 'Tomás Farjat',
+  'v. aboian': 'Valerio Aboian',
+  'g. a. olivieri': 'Genaro Alberto Olivieri',
+  'j. m. la serna': 'Juan Manuel La Serna',
+  'a. collarini': 'Andrea Collarini',
+  'f. mena': 'Facundo Mena',
+  'g. andreozzi': 'Guido Andreozzi',
+  'g. duran': 'Guillermo Durán'
+};
+
 const KNOWN_ARG_PLAYERS = [
   'cerundolo', 'baez', 'etcheverry', 'navone', 'comesana', 'ugo carabelli',
   'diaz acosta', 'tirante', 'coria', 'schwartzman', 'ficovich', 'kicker',
@@ -67,13 +95,45 @@ const KNOWN_ARG_PLAYERS = [
   'zeballos', 'gonzalez', 'molteni', 'bagnis', 'monterrubini', 'monzon',
   'descotte', 'farjat', 'estabee', 'valerio', 'lingua', 'aboian', 'perez contri',
   'galdos', 'paz', 'mena', 'olivieri', 'la serna', 'zeitune', 'del pino',
-  'kestelboim', 'duran', 'andreozzi', 'collarini', 'mittelstadt', 'torres'
+  'kestelboim', 'duran', 'andreozzi', 'collarini'
 ];
+
+function normalize(str = '') {
+  return str.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
+}
+
+function expandPlayerName(rawName = '') {
+  const clean = rawName.trim();
+  const key = normalize(clean);
+  if (PLAYER_FULL_NAMES[key]) return PLAYER_FULL_NAMES[key];
+  if (clean.includes('/')) {
+    return clean.split('/').map(p => expandPlayerName(p.trim())).join(' / ');
+  }
+  return clean;
+}
 
 function isArgPlayer(name) {
   if (!name) return false;
-  const lower = name.toLowerCase();
+  const lower = normalize(name);
+  // Evitar falsos positivos de jugadoras extranjeras o bolivianos
+  if (lower.includes('herazo gonzalez') || lower.includes('reasco gonzalez') || lower.includes('f. zeballos')) return false;
   return KNOWN_ARG_PLAYERS.some(k => lower.includes(k));
+}
+
+function ensureUrlInSitemap(slug, dateStr) {
+  try {
+    if (!fs.existsSync(SITEMAP_PATH)) return;
+    const xml = fs.readFileSync(SITEMAP_PATH, 'utf-8');
+    const targetUrl = `https://doblefaltatenis.com.ar/noticias/${slug}`;
+    if (xml.includes(targetUrl)) return;
+
+    const newEntry = `  <url>\n    <loc>${targetUrl}</loc>\n    <lastmod>${dateStr}</lastmod>\n    <changefreq>weekly</changefreq>\n    <priority>0.8</priority>\n  </url>\n`;
+    const updatedXml = xml.replace('</urlset>', `${newEntry}</urlset>`);
+    fs.writeFileSync(SITEMAP_PATH, updatedXml, 'utf-8');
+    console.log(`🗺️ Sitemap actualizado con: ${targetUrl}`);
+  } catch (err) {
+    console.warn('⚠️ No se pudo actualizar public/sitemap.xml:', err.message);
+  }
 }
 
 function getArgentinaDate(offsetDays = 0) {
@@ -101,11 +161,6 @@ function hashDate(dateStr) {
   return h;
 }
 
-function pickImageForDate(dateStr) {
-  const idx = hashDate(dateStr) % TENNIS_IMAGES.length;
-  return TENNIS_IMAGES[idx];
-}
-
 function cleanTournamentName(rawName) {
   if (!rawName) return 'Circuito Internacional';
   return rawName
@@ -113,6 +168,119 @@ function cleanTournamentName(rawName) {
     .replace(/\s*-\s*WTA\s*Singles/i, '')
     .replace(/\s*-\s*Qualification/i, ' (Qualy)')
     .trim();
+}
+
+// Calcular jerarquía del partido para priorizar Grand Slams, Masters 1000, ATP, WTA y finales en el titular y la foto
+function getMatchPrestige(m) {
+  let score = 0;
+  if (m.argWon) score += 500;
+  if (m.isFinal) score += 300;
+  if (!m.isDoubles) score += 120;
+
+  const t = `${m.tournament} ${m.eventType}`.toLowerCase();
+  if (/paris|vienna|stockholm|metz|atp|grand slam|roland|wimbledon|us open|australian|indian wells|miami|madrid|rome/.test(t)) {
+    score += 250;
+  } else if (/wta|cali|queretaro|curitiba|sopo|merida/.test(t)) {
+    score += 180;
+  } else if (/challenger|sauipe|villa maria|guayaquil|lima|montevideo|buenos aires|campinas/.test(t)) {
+    score += 140;
+  } else {
+    score += 50; // M25 / M15 / W15
+  }
+  return score;
+}
+
+async function isImageAccessible(url) {
+  try {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 4500);
+    const res = await fetch(url, {
+      method: 'GET',
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/124.0.0.0 Safari/537.36'
+      },
+      signal: controller.signal
+    });
+    clearTimeout(timer);
+    const ct = res.headers.get('content-type') || '';
+    return res.ok && ct.startsWith('image/');
+  } catch {
+    return false;
+  }
+}
+
+async function searchBingVerifiedPhoto(query, surnameKeyword, usedImagesSet) {
+  try {
+    const url = `https://www.bing.com/images/search?q=${encodeURIComponent(query)}&form=HDRSC2&first=1`;
+    const res = await fetch(url, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
+        'Accept-Language': 'es-AR,es;q=0.9,en;q=0.8'
+      }
+    });
+    const html = await res.text();
+    const blocks = [...html.matchAll(/\bm="(\{[^"]+\})"/g)].map(m => {
+      try {
+        return JSON.parse(m[1].replace(/&quot;/g, '"').replace(/&amp;/g, '&'));
+      } catch {
+        return null;
+      }
+    }).filter(Boolean);
+
+    const kw = normalize(surnameKeyword);
+    for (const b of blocks) {
+      if (!b.murl || !/^https:\/\/.+\.(jpg|jpeg|png|webp)/i.test(b.murl)) continue;
+      if (usedImagesSet.has(b.murl)) continue;
+      if (WATERMARK_DOMAINS.some(d => b.murl.toLowerCase().includes(d))) continue;
+
+      const textToCheck = normalize(`${b.t || ''} ${b.desc || ''} ${b.murl || ''} ${b.purl || ''}`);
+      if (!textToCheck.includes(kw)) continue;
+      if (textToCheck.includes('papa francisco') || textToCheck.includes('franco')) continue;
+
+      if (await isImageAccessible(b.murl)) {
+        return { url: b.murl, caption: b.t || query };
+      }
+    }
+  } catch (err) {
+    console.warn(`⚠️ Error buscando foto para "${query}":`, err.message);
+  }
+  return null;
+}
+
+// Buscador inteligente de foto contextual del jugador protagonista y el torneo
+async function findContextualMatchPhoto(argMatches, dateStr, usedImagesSet = new Set()) {
+  const candidates = [...argMatches].sort((a, b) => b.prestige - a.prestige);
+
+  for (const match of candidates.slice(0, 4)) {
+    const primaryPlayer = match.fullArgName.split('/')[0].trim();
+    const surname = primaryPlayer.split(' ').slice(-1)[0];
+    const cleanVenue = match.tournament.replace(/\s*\(Qualy\)/i, '').replace(/^[MW]\d+\s*/i, '').trim();
+
+    const queries = [];
+    if (match.argWon && match.isFinal) {
+      queries.push(`${primaryPlayer} ${cleanVenue} campeon trofeo tenis`);
+      queries.push(`${primaryPlayer} campeon trofeo festejo tenis`);
+    }
+    if (match.argWon) {
+      queries.push(`${primaryPlayer} ${cleanVenue} tenista argentino festejo`);
+      queries.push(`${primaryPlayer} tenista argentino festejo ATP`);
+    } else {
+      queries.push(`${primaryPlayer} ${cleanVenue} tenista argentino`);
+      queries.push(`${primaryPlayer} tenista argentino ATP`);
+    }
+
+    for (const q of queries) {
+      const found = await searchBingVerifiedPhoto(q, surname, usedImagesSet);
+      if (found) {
+        console.log(`📸 Foto contextual verificada para ${primaryPlayer} (${cleanVenue}): ${found.url}`);
+        usedImagesSet.add(found.url);
+        return found.url;
+      }
+    }
+  }
+
+  const fallback = FALLBACK_ARG_PHOTOS[hashDate(dateStr) % FALLBACK_ARG_PHOTOS.length];
+  return fallback;
 }
 
 async function fetchFixtures(dateStr) {
@@ -141,8 +309,8 @@ function parseArgMatches(matches) {
     const isFinished = m.event_status === 'Finished' || m.event_status === 'Retired' || m.event_status === 'After Pen.';
     if (!isFinished) continue;
 
-    const argName = isP1Arg ? m.event_first_player : m.event_second_player;
-    const opponent = isP1Arg ? m.event_second_player : m.event_first_player;
+    const rawArgName = isP1Arg ? m.event_first_player : m.event_second_player;
+    const rawOpponent = isP1Arg ? m.event_second_player : m.event_first_player;
     const argWon = isP1Arg ? m.event_winner === 'First Player' : m.event_winner === 'Second Player';
 
     const scoresList = (m.scores || []).map(s => {
@@ -152,53 +320,61 @@ function parseArgMatches(matches) {
     });
     const scoreStr = scoresList.length > 0 ? scoresList.join(', ') : (m.event_final_result || 'Final');
 
-    const isDoubles = argName.includes('/') || opponent.includes('/') || (m.event_type_type || '').toLowerCase().includes('doubles');
+    const isDoubles = rawArgName.includes('/') || rawOpponent.includes('/') || (m.event_type_type || '').toLowerCase().includes('doubles');
+    const roundStr = (m.tournament_round || '').toLowerCase();
+    const isQualy = (m.tournament_name || '').toLowerCase().includes('qualification') || roundStr.includes('qualification') || String(m.event_qualification).toLowerCase() === 'true';
+    const isFinal = !isQualy && roundStr.includes('final') && !roundStr.includes('semi') && !roundStr.includes('quarter') && !roundStr.includes('1/');
 
-    argMatches.push({
+    const item = {
       tournament: cleanTournamentName(m.tournament_name),
       rawTournament: m.tournament_name || 'Torneo Internacional',
       eventType: m.event_type_type || 'Circuito Profesional',
       round: m.tournament_round || '',
-      argName: argName.trim(),
-      opponent: opponent.trim(),
+      isFinal,
+      argName: expandPlayerName(rawArgName),
+      fullArgName: expandPlayerName(rawArgName),
+      opponent: expandPlayerName(rawOpponent),
       argWon,
       scoreStr,
       setsCount: scoresList.length,
       hadTiebreak: scoreStr.includes('7-6') || scoreStr.includes('6-7'),
       isDoubles,
       status: m.event_status
-    });
+    };
+    item.prestige = getMatchPrestige(item);
+    argMatches.push(item);
   }
 
-  return argMatches;
+  // Ordenar por jerarquía para que los partidos ATP/WTA/Challenger encabecen siempre la crónica
+  return argMatches.sort((a, b) => b.prestige - a.prestige);
 }
 
 // Generación editorial con Gemini cuando la clave está disponible
 async function generateEditorialWithGemini(dateStr, humanDate, argMatches) {
   const matchSummaryText = argMatches.map(m => {
-    return `- ${m.argWon ? 'VICTORIA' : 'DERROTA'}: ${m.argName} vs ${m.opponent} en ${m.tournament} (${m.eventType}) | Score: ${m.scoreStr}`;
+    return `- ${m.argWon ? 'VICTORIA' : 'DERROTA'}: ${m.argName} vs ${m.opponent} en ${m.tournament} (${m.eventType}${m.isFinal ? ' - FINAL' : ''}) | Score: ${m.scoreStr}`;
   }).join('\n');
 
   const prompt = `
 Actúa como un periodista deportivo argentino especializado en tenis para el portal "DobleFalta".
 Fecha de la jornada: ${humanDate} (${dateStr}).
 
-Resultados oficiales de los tenistas argentinos en la jornada:
+Resultados oficiales de los tenistas argentinos en la jornada (ordenados por importancia del torneo):
 ${matchSummaryText}
 
 Escribe una crónica periodística extensa, original y profunda en español rioplatense neutro.
 Responde únicamente con este objeto JSON válido:
 {
-  "title": "Título periodístico único nombrando a los ganadores destacados y torneos (máximo 85 caracteres)",
+  "title": "Título periodístico único nombrando a los ganadores principales de mayor jerarquía y el torneo (máximo 85 caracteres)",
   "slug": "resumen-argentinos-${dateStr}",
-  "excerpt": "Resumen de 2 oraciones precisas destacando las figuras, torneos y el balance numérico de la fecha.",
+  "excerpt": "Resumen de 2 oraciones precisas destacando las figuras principales, los torneos y el balance numérico de la fecha.",
   "category": "Tenis Argentino",
   "readTime": "5 min",
   "content": "<p>Crónica completa en HTML con subtítulos <h2> y <h3>...</p>"
 }
 Requisitos:
 1. Mínimo 550 palabras en "content".
-2. Analiza los partidos agrupando por torneo, destacando sets, tiebreaks, actuación en singles y dobles, y contexto del circuito.
+2. Destaca en el título y primer párrafo a los tenistas de mayor jerarquía (ATP, WTA y Challenger antes que ITF).
 3. Usa etiquetas HTML limpias (<p>, <h2>, <h3>, <strong>, <em>, <ul>, <li>).
 `;
 
@@ -241,7 +417,6 @@ Requisitos:
   throw lastError || new Error('No se pudo generar con Gemini');
 }
 
-// Redactor periodístico avanzado que construye crónicas únicas, extensas y analíticas basadas en los datos reales del día
 function generateRichJournalisticChronicle(dateStr, humanDate, argMatches) {
   const h = hashDate(dateStr);
   const victorias = argMatches.filter(m => m.argWon);
@@ -251,7 +426,6 @@ function generateRichJournalisticChronicle(dateStr, humanDate, argMatches) {
   const threeSetWins = victorias.filter(m => m.setsCount >= 3);
   const straightSetWins = victorias.filter(m => m.setsCount === 2);
 
-  // Agrupar partidos por torneo
   const byTournament = {};
   for (const m of argMatches) {
     if (!byTournament[m.tournament]) byTournament[m.tournament] = [];
@@ -260,32 +434,34 @@ function generateRichJournalisticChronicle(dateStr, humanDate, argMatches) {
   const tournamentNames = Object.keys(byTournament);
   const topTournaments = tournamentNames.slice(0, 3).join(', ');
 
-  // Construir título periodístico único según los protagonistas reales del día
+  // Construir título priorizando campeones o las victorias de mayor jerarquía (ATP/WTA/Challenger)
+  const championMatch = victorias.find(m => m.isFinal);
   let title = '';
-  if (singlesWins.length >= 2) {
+  if (championMatch) {
+    const cleanVenue = championMatch.tournament.replace(/\s*\(Qualy\)/i, '');
+    title = `¡Campeón en ${cleanVenue}! ${championMatch.argName} se consagra y lidera la jornada argentina (${humanDate})`;
+  } else if (singlesWins.length >= 2) {
     const p1 = singlesWins[0].argName;
     const p2 = singlesWins[1].argName;
     const mainVenue = singlesWins[0].tournament.replace(/\s*\(Qualy\)/i, '');
     const titleVariants = [
-      `Triunfos de ${p1} y ${p2}: Crónica argentina en ${mainVenue} y el circuito (${humanDate})`,
-      `${p1} y ${p2} pisan fuerte en la jornada del ${humanDate}: Balance del tenis argentino`,
+      `Triunfos de ${p1} en ${mainVenue} y ${p2}: Crónica argentina del ${humanDate}`,
+      `${p1} y ${p2} pisan fuerte en ${mainVenue} y el circuito: Balance del ${humanDate}`,
       `Festejos de ${p1} y ${p2} en una jornada de ${victorias.length} victorias para la Legión (${humanDate})`
     ];
     title = titleVariants[h % titleVariants.length];
   } else if (victorias.length >= 1) {
     const hero = victorias[0].argName;
     const venue = victorias[0].tournament.replace(/\s*\(Qualy\)/i, '');
-    title = `Victoria de ${hero} en ${venue} y análisis de la fecha argentina (${humanDate})`;
+    title = `Gran victoria de ${hero} en ${venue} y balance argentino del ${humanDate}`;
   } else {
     title = `Crónica y análisis de los tenistas argentinos en ${topTournaments} (${humanDate})`;
   }
 
-  // Excerpt único y descriptivo
   const excerpt = victorias.length > 0
     ? `Cobertura completa del ${humanDate}: la Legión Argentina cosechó ${victorias.length} ${victorias.length === 1 ? 'triunfo' : 'triunfos'} en ${topTournaments}, con actuaciones destacadas de ${victorias.slice(0, 3).map(v => v.argName).join(', ')}.`
     : `Repaso periodístico de la actividad argentina del ${humanDate} en ${topTournaments}, con el análisis de los ${argMatches.length} encuentros disputados.`;
 
-  // Variantes de párrafos de apertura sin repetición de plantillas
   const winRate = Math.round((victorias.length / argMatches.length) * 100);
   const introTemplates = [
     `<p>La actividad del <strong>${humanDate}</strong> dejó una huella sumamente intensa para los representantes del tenis argentino desplegados a lo largo del calendario internacional. Con presencia simultánea en escenarios como <strong>${topTournaments}</strong>, la delegación albiceleste completó un total de <strong>${argMatches.length} presentaciones oficiales</strong>, registrando un saldo de <strong>${victorias.length} ${victorias.length === 1 ? 'victoria' : 'victorias'} y ${derrotas.length} ${derrotas.length === 1 ? 'caída' : 'caídas'}</strong> (${winRate}% de eficacia en la jornada).</p>`,
@@ -296,11 +472,10 @@ function generateRichJournalisticChronicle(dateStr, humanDate, argMatches) {
 
   let html = introTemplates[h % introTemplates.length];
 
-  // Sección 1: Desarrollo narrativo de las principales victorias individuales
   if (singlesWins.length > 0) {
     html += `<h2>Las figuras del día: Análisis de los triunfos individuales</h2>`;
     const featuredSingles = singlesWins.slice(0, 4);
-    const singleParagraphs = featuredSingles.map((m, idx) => {
+    const singleParagraphs = featuredSingles.map((m) => {
       if (m.setsCount >= 3) {
         return `<p>Uno de los duelos más exigentes y emotivos de la fecha tuvo como protagonista a <strong>${m.argName}</strong> en el marco del torneo de <strong>${m.tournament}</strong>. En un encuentro de altísima paridad táctica frente a <strong>${m.opponent}</strong>, el representante argentino supo gestionar los momentos de máxima tensión para terminar imponiéndose por <strong>${m.scoreStr}</strong>. La capacidad para sostener la intensidad física en el parcial decisivo y ajustar la devolución en los games críticos resultaron determinantes para inclinar la balanza.</p>`;
       } else if (m.hadTiebreak) {
@@ -317,7 +492,6 @@ function generateRichJournalisticChronicle(dateStr, humanDate, argMatches) {
     }
   }
 
-  // Sección 2: Análisis de la actividad en Dobles (si hubo triunfos en dobles)
   if (doublesWins.length > 0) {
     html += `<h2>Protagonismo argentino en la red: La jornada de dobles</h2>`;
     const doublesDescriptions = doublesWins.map(m => {
@@ -326,7 +500,6 @@ function generateRichJournalisticChronicle(dateStr, humanDate, argMatches) {
     html += `<p>La especialidad de dobles volvió a aportar alegrías significativas para la delegación nacional gracias a la coordinación en la red y la firmeza en los turnos de saque. En esta jornada se destacó que ${doublesDescriptions.join('; mientras que ')}. En un formato donde los puntos decisivos sin ventaja (<em>no-ad</em>) y los <em>super tie-breaks</em> a diez puntos exigen reflejos inmediatos, los especialistas argentinos volvieron a marcar diferencias.</p>`;
   }
 
-  // Sección 3: Recorrido torneo por torneo
   html += `<h2>Panorama torneo por torneo: Así se repartió la acción</h2>`;
   html += `<p>La dispersión geográfica del calendario obligó a los jugadores argentinos a adaptarse a condiciones de juego muy diversas a lo largo de las <strong>${tournamentNames.length} sedes</strong> donde hubo presencia nacional durante este ${humanDate}:</p>`;
 
@@ -346,7 +519,6 @@ function generateRichJournalisticChronicle(dateStr, humanDate, argMatches) {
     html += `<p>En las canchas de <strong>${tName}</strong> se registraron ${tWins.length} ${tWins.length === 1 ? 'victoria' : 'victorias'} y ${tLosses.length} ${tLosses.length === 1 ? 'derrota' : 'derrotas'} para nuestros representantes, incluyendo ${details}.</p>`;
   }
 
-  // Sección 4: Planilla oficial de marcadores
   html += `<h2>Resumen oficial de resultados del ${humanDate}</h2>`;
   if (victorias.length > 0) {
     html += `<p><strong>Victorias registradas (${victorias.length}):</strong></p><ul>`;
@@ -363,7 +535,6 @@ function generateRichJournalisticChronicle(dateStr, humanDate, argMatches) {
     html += `</ul>`;
   }
 
-  // Sección 5: Cierre analítico variado
   const closingTemplates = [
     `<h2>Lectura táctica y proyección en el Ranking</h2><p>Con ${straightSetWins.length} triunfos resueltos en sets corridos y ${threeSetWins.length} victorias trabajadas en el máximo de parciales, el balance del ${humanDate} confirma la competitividad de los tenistas argentinos en las distintas categorías del circuito. Cada ronda superada no solo representa un impulso anímico para lo que resta de la semana, sino una cosecha clave de unidades dentro del sistema rodante de 52 semanas de la ATP y la WTA.</p>`,
     `<h2>Lo que dejó la fecha para el tenis nacional</h2><p>El saldo de ${victorias.length} victorias sobre ${argMatches.length} encuentros disputados en ${tournamentNames.length} torneos diferentes refleja el enorme volumen de jugadores argentinos activos cada semana en el plano internacional. Mientras quienes avanzaron de ronda ya preparan sus compromisos de la próxima jornada, la temporada continúa ofreciendo oportunidades constantes de ascenso en el escalafón mundial.</p>`,
@@ -380,6 +551,8 @@ function generateRichJournalisticChronicle(dateStr, humanDate, argMatches) {
     content: html
   };
 }
+
+const usedImagesInRun = new Set();
 
 async function processDate(targetDate) {
   const humanDate = formatHumanDate(targetDate);
@@ -410,12 +583,15 @@ async function processDate(targetDate) {
     article = generateRichJournalisticChronicle(targetDate, humanDate, argMatches);
   }
 
+  // Buscar foto real de prensa del jugador argentino protagonista de esa jornada y torneo
+  const contextualPhotoUrl = await findContextualMatchPhoto(argMatches, targetDate, usedImagesInRun);
+
   const docId = article.slug || `resumen-argentinos-${targetDate}`;
   const finalDoc = {
     ...article,
     publishedAt: targetDate,
     author: 'Redacción DobleFalta',
-    imageUrl: pickImageForDate(targetDate),
+    imageUrl: contextualPhotoUrl,
     totalMatches: argMatches.length,
     createdAt: new Date().toISOString()
   };
@@ -423,7 +599,7 @@ async function processDate(targetDate) {
   console.log(`💾 Guardando en Firestore colección 'news' con ID: ${docId}`);
   await setDoc(doc(db, 'news', docId), finalDoc);
   ensureUrlInSitemap(docId, targetDate);
-  console.log(`✅ Guardado: "${finalDoc.title}" (${finalDoc.content.length} caracteres)`);
+  console.log(`✅ Guardado: "${finalDoc.title}" | Foto: ${contextualPhotoUrl}`);
   return true;
 }
 
@@ -441,7 +617,7 @@ async function main() {
         const dStr = getArgentinaDate(-i);
         await processDate(dStr);
       }
-      console.log('\n🎉 ¡Backfill de crónicas argentinas completado con éxito!');
+      console.log('\n🎉 ¡Backfill de crónicas argentinas con fotos contextuales completado con éxito!');
     } else {
       const targetDate = cliDate || process.env.TARGET_DATE || getArgentinaDate(-1);
       await processDate(targetDate);
