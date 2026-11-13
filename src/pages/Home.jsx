@@ -37,7 +37,7 @@ const Home = () => {
   const todayART = getTodayART();
   const selectedDate = searchParams.get('date') || todayART;
   const isToday = selectedDate === todayART;
-  const [latestNews, setLatestNews] = useState(SEED_NEWS.slice(0, 6));
+  const [latestNews, setLatestNews] = useState(SEED_NEWS.slice(0, 4));
 
   useEffect(() => {
     const newsRef = collection(db, 'news');
@@ -49,7 +49,7 @@ const Home = () => {
         const combined = [
           ...fsDocs,
           ...SEED_NEWS.filter(s => !seen.has(s.slug))
-        ].slice(0, 6);
+        ].slice(0, 4);
         setLatestNews(combined);
       }
     }, () => {});

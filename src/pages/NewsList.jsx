@@ -9,9 +9,16 @@ import { SEED_NEWS } from '../data/editorialArticles';
 
 export { SEED_NEWS };
 
+const ITEMS_PER_PAGE = 4;
+
 const NewsList = () => {
   const [articles, setArticles] = useState(SEED_NEWS);
   const [selectedCategory, setSelectedCategory] = useState('TODAS');
+  const [currentPage, setCurrentPage] = useState(1);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [selectedCategory]);
 
   useEffect(() => {
     const newsRef = collection(db, 'news');
@@ -48,6 +55,17 @@ const NewsList = () => {
   const filteredArticles = selectedCategory === 'TODAS'
     ? articles
     : articles.filter(a => a.category === selectedCategory);
+
+  const totalPages = Math.ceil(filteredArticles.length / ITEMS_PER_PAGE) || 1;
+  const paginatedArticles = filteredArticles.slice(
+    (currentPage - 1) * ITEMS_PER_PAGE,
+    currentPage * ITEMS_PER_PAGE
+  );
+
+  const handlePageChange = (newPage) => {
+    setCurrentPage(newPage);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 
   return (
     <div className="news-page" style={{ padding: '20px 15px', maxWidth: '1040px', margin: '0 auto', color: '#fff' }}>
@@ -89,9 +107,9 @@ const NewsList = () => {
         </div>
       </header>
 
-      {/* Grid de Noticias */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '25px', marginBottom: '45px' }}>
-        {filteredArticles.map((article) => (
+      {/* Grid de Noticias (4 por página) */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(290px, 1fr))', gap: '25px', marginBottom: '30px' }}>
+        {paginatedArticles.map((article) => (
           <article
             key={article.id || article.slug}
             style={{
@@ -172,6 +190,48 @@ const NewsList = () => {
           </article>
         ))}
       </div>
+
+      {/* Controles de Paginación */}
+      {totalPages > 1 && (
+        <div style={{
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          gap: '18px',
+          marginBottom: '45px',
+          padding: '15px 0'
+        }}>
+          <button
+            disabled={currentPage === 1}
+            onClick={() => handlePageChange(currentPage - 1)}
+            className="main-header-block_button"
+            style={{
+              opacity: currentPage === 1 ? 0.35 : 1,
+              cursor: currentPage === 1 ? 'default' : 'pointer',
+              minWidth: '120px'
+            }}
+          >
+            ← ANTERIOR
+          </button>
+
+          <span style={{ color: '#ccc', fontWeight: 700, fontSize: '0.9rem' }}>
+            PÁGINA {currentPage} DE {totalPages}
+          </span>
+
+          <button
+            disabled={currentPage >= totalPages}
+            onClick={() => handlePageChange(currentPage + 1)}
+            className="main-header-block_button"
+            style={{
+              opacity: currentPage >= totalPages ? 0.35 : 1,
+              cursor: currentPage >= totalPages ? 'default' : 'pointer',
+              minWidth: '120px'
+            }}
+          >
+            SIGUIENTE →
+          </button>
+        </div>
+      )}
 
       {/* Sección Editorial de Contexto */}
       <section style={{
