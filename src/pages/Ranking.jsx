@@ -242,38 +242,56 @@ const Ranking = () => {
         </div>
       )}
       
-      {/* SECCIÓN DE CONTENIDO ESTÁTICO (PARA ADSENSE/SEO) */}
+      {/* SECCIÓN DE CONTENIDO EDITORIAL SOBRE EL RANKING (PARA ADSENSE/SEO) */}
       <section className="static-about-section" style={{ 
-        padding: '60px 20px', 
-        maxWidth: '800px', 
+        padding: '50px 20px 60px', 
+        maxWidth: '860px', 
         margin: '0 auto', 
         color: '#ccc',
         lineHeight: '1.8',
         fontSize: '0.95rem',
-        borderTop: '1px solid rgba(255,255,255,0.05)',
+        borderTop: '1px solid rgba(255,255,255,0.08)',
         marginTop: '40px'
       }}>
-        <h2 style={{ color: 'var(--ball-yellow)', marginBottom: '20px', fontSize: '1.5rem' }}>¿Cómo funciona el Ranking ATP y WTA?</h2>
+        <h2 style={{ color: 'var(--ball-yellow)', marginBottom: '18px', fontSize: '1.5rem' }}>
+          ¿Cómo se calcula el Ranking Mundial ATP y WTA y cómo funciona la defensa de puntos?
+        </h2>
         <p style={{ marginBottom: '15px' }}>
-          El ranking profesional de tenis es un sistema basado en el rendimiento de los jugadores durante las últimas 52 semanas. 
-          Los puntos se otorgan según la instancia alcanzada en los torneos oficiales del circuito.
+          El escalafón oficial del tenis profesional funciona mediante un sistema acumulativo rodante de <strong>52 semanas</strong>. A diferencia de otros deportes donde la tabla se reinicia al comenzar el año, en la ATP y la WTA cada jugador conserva los puntos obtenidos en un torneo durante exactamente 365 días. Al cumplirse el aniversario de ese certamen, las unidades del año anterior se descuentan automáticamente y se suman las logradas en la nueva edición.
         </p>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '20px', marginBottom: '20px' }}>
-          <div style={{ background: 'rgba(255,255,255,0.03)', padding: '15px', borderRadius: '10px' }}>
-            <h4 style={{ color: 'var(--ball-yellow)', marginBottom: '10px' }}>Grand Slams</h4>
-            <p style={{ fontSize: '0.85rem' }}>Otorgan 2000 puntos al campeón. Son los torneos de mayor prestigio y dificultad.</p>
+        <p style={{ marginBottom: '20px' }}>
+          La puntuación total de cada tenista se conforma sumando sus <strong>19 mejores resultados</strong> (o 20 si disputa las Finals de fin de temporada), incluyendo los cuatro torneos de Grand Slam, los Masters 1000 obligatorios y sus mejores desempeños en certámenes ATP 500, ATP 250 y el circuito Challenger.
+        </p>
+
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '18px', marginBottom: '25px' }}>
+          <div style={{ background: 'rgba(255,255,255,0.03)', padding: '18px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.06)' }}>
+            <h4 style={{ color: 'var(--ball-yellow)', marginBottom: '10px', marginTop: 0 }}>Grand Slams (2.000 pts)</h4>
+            <p style={{ fontSize: '0.86rem', margin: 0 }}>
+              Australian Open, Roland Garros, Wimbledon y US Open. El finalista recibe 1.300 puntos, los semifinalistas 800 y los cuartofinalistas 400.
+            </p>
           </div>
-          <div style={{ background: 'rgba(255,255,255,0.03)', padding: '15px', borderRadius: '10px' }}>
-            <h4 style={{ color: 'var(--ball-yellow)', marginBottom: '10px' }}>Masters 1000</h4>
-            <p style={{ fontSize: '0.85rem' }}>El campeón suma 1000 puntos. Son obligatorios para los jugadores del top del ranking.</p>
+          <div style={{ background: 'rgba(255,255,255,0.03)', padding: '18px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.06)' }}>
+            <h4 style={{ color: 'var(--ball-yellow)', marginBottom: '10px', marginTop: 0 }}>Masters 1000 / WTA 1000</h4>
+            <p style={{ fontSize: '0.86rem', margin: 0 }}>
+              El campeón suma 1.000 puntos y el finalista 650. Son torneos de asistencia obligatoria para las figuras del Top 30 mundial.
+            </p>
           </div>
-          <div style={{ background: 'rgba(255,255,255,0.03)', padding: '15px', borderRadius: '10px' }}>
-            <h4 style={{ color: 'var(--ball-yellow)', marginBottom: '10px' }}>ATP 500 y 250</h4>
-            <p style={{ fontSize: '0.85rem' }}>Torneos fundamentales para la base del circuito y el ascenso de jóvenes promesas.</p>
+          <div style={{ background: 'rgba(255,255,255,0.03)', padding: '18px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.06)' }}>
+            <h4 style={{ color: 'var(--ball-yellow)', marginBottom: '10px', marginTop: 0 }}>ATP 500, 250 y Challenger</h4>
+            <p style={{ fontSize: '0.86rem', margin: 0 }}>
+              Base competitiva donde los tenistas argentinos construyen su ingreso al Top 100 para entrar directo a los cuadros de Grand Slam.
+            </p>
           </div>
         </div>
-        <p>
-          En <strong>DobleFalta</strong>, actualizamos estas posiciones semanalmente para que puedas seguir de cerca el ascenso de los tenistas en el escalafón mundial, con especial atención a los movimientos de los jugadores argentinos en la elite del tenis.
+
+        <h3 style={{ color: 'var(--ball-yellow)', marginBottom: '12px', fontSize: '1.2rem' }}>
+          Seguimiento de los Tenistas Argentinos en el Escalafón
+        </h3>
+        <p style={{ marginBottom: '15px' }}>
+          Activando el botón <strong>🇦🇷 ARG</strong> en la barra superior de nuestra tabla, podés filtrar instantáneamente el listado para visualizar el ranking exclusivo de los jugadores y jugadoras de Argentina. Además, haciendo clic sobre cualquier tenista accederás a su ficha técnica completa con su historial de resultados recientes, superficie predilecta y estadísticas de temporada.
+        </p>
+        <p style={{ marginBottom: 0 }}>
+          ¿Querés profundizar más? Leé nuestra <Link to="/noticias/como-funciona-sistema-puntos-ranking-atp" style={{ color: 'var(--ball-yellow)' }}>Guía Completa del Sistema de Puntos ATP</Link> o revisá el <Link to="/ranking/en-vivo" style={{ color: 'var(--ball-yellow)' }}>Ranking ATP en Vivo</Link> actualizado partido a partido.
         </p>
       </section>
     </div>

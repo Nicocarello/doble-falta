@@ -1,6 +1,9 @@
 import React, { useState, useEffect, useMemo } from 'react'
-import { useNavigate, useSearchParams } from 'react-router-dom'
+import { useNavigate, useSearchParams, Link } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
+import { collection, query, orderBy, limit, onSnapshot } from 'firebase/firestore'
+import { db } from '../services/firebase'
+import { SEED_NEWS } from '../data/editorialArticles'
 import StatusBadge from '../components/common/StatusBadge'
 import PlayerFlag from '../components/common/PlayerFlag'
 import { parseSetScore, getMatchStatus, USER_TIMEZONE, parseRound, getTodayART, filterEmptySets, isJuniorMatch } from '../utils/tennisHelpers'
@@ -34,6 +37,24 @@ const Home = () => {
   const todayART = getTodayART();
   const selectedDate = searchParams.get('date') || todayART;
   const isToday = selectedDate === todayART;
+  const [latestNews, setLatestNews] = useState(SEED_NEWS.slice(0, 6));
+
+  useEffect(() => {
+    const newsRef = collection(db, 'news');
+    const q = query(newsRef, orderBy('publishedAt', 'desc'), limit(4));
+    const unsub = onSnapshot(q, (snapshot) => {
+      if (!snapshot.empty) {
+        const fsDocs = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+        const seen = new Set(fsDocs.map(a => a.slug || a.id));
+        const combined = [
+          ...fsDocs,
+          ...SEED_NEWS.filter(s => !seen.has(s.slug))
+        ].slice(0, 6);
+        setLatestNews(combined);
+      }
+    }, () => {});
+    return () => unsub();
+  }, []);
 
   const setCategory = (c) => {
     searchParams.set('category', c);
@@ -270,42 +291,179 @@ const Home = () => {
         )}
       </div>
 
-      {/* SECCIÓN DE CONTENIDO ESTÁTICO (PARA ADSENSE/SEO) */}
+      {/* BLOQUE DE ÚLTIMAS CRÓNICAS Y ANÁLISIS DEL TENIS ARGENTINO */}
+      <section style={{
+        padding: '40px 20px 20px',
+        maxWidth: '960px',
+        margin: '0 auto',
+        color: '#fff'
+      }}>
+        <div style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          flexWrap: 'wrap',
+          gap: '12px',
+          marginBottom: '22px',
+          borderBottom: '1px solid rgba(255,255,255,0.1)',
+          paddingBottom: '14px'
+        }}>
+          <div>
+            <h2 style={{ color: 'var(--ball-yellow)', margin: '0 0 6px 0', fontSize: '1.45rem' }}>
+              Últimas Crónicas y Análisis del Tenis Argentino
+            </h2>
+            <p style={{ color: '#aaa', margin: 0, fontSize: '0.9rem' }}>
+              Cobertura periodística diaria de la Legión Argentina, historia, táctica y guías del circuito ATP y WTA.
+            </p>
+          </div>
+          <Link
+            to="/noticias"
+            style={{
+              background: 'rgba(212, 235, 0, 0.12)',
+              color: 'var(--ball-yellow)',
+              padding: '8px 16px',
+              borderRadius: '20px',
+              textDecoration: 'none',
+              fontSize: '0.85rem',
+              fontWeight: '700',
+              border: '1px solid rgba(212, 235, 0, 0.3)'
+            }}
+          >
+            Ver todas las noticias →
+          </Link>
+        </div>
+
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
+          gap: '18px'
+        }}>
+          {latestNews.map((item) => (
+            <article
+              key={item.slug || item.id}
+              style={{
+                background: 'rgba(255,255,255,0.03)',
+                border: '1px solid rgba(255,255,255,0.08)',
+                borderRadius: '10px',
+                overflow: 'hidden',
+                display: 'flex',
+                flexDirection: 'column'
+              }}
+            >
+              {item.imageUrl && (
+                <div style={{ height: '140px', overflow: 'hidden', position: 'relative' }}>
+                  <img
+                    src={item.imageUrl}
+                    alt={item.title}
+                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                    loading="lazy"
+                  />
+                  <span style={{
+                    position: 'absolute',
+                    top: '8px',
+                    left: '8px',
+                    background: 'rgba(18,20,23,0.88)',
+                    color: 'var(--ball-yellow)',
+                    padding: '3px 9px',
+                    borderRadius: '10px',
+                    fontSize: '0.7rem',
+                    fontWeight: '700'
+                  }}>
+                    {item.category || 'Tenis Argentino'}
+                  </span>
+                </div>
+              )}
+              <div style={{ padding: '15px', display: 'flex', flexDirection: 'column', flexGrow: 1 }}>
+                <span style={{ fontSize: '0.75rem', color: '#888', marginBottom: '6px' }}>
+                  {item.publishedAt} • {item.readTime || '5 min'}
+                </span>
+                <h3 style={{ fontSize: '1.02rem', lineHeight: '1.38', margin: '0 0 10px 0' }}>
+                  <Link
+                    to={`/noticias/${item.slug || item.id}`}
+                    style={{ color: '#fff', textDecoration: 'none' }}
+                  >
+                    {item.title}
+                  </Link>
+                </h3>
+                <p style={{ fontSize: '0.84rem', color: '#aaa', lineHeight: '1.55', margin: '0 0 12px 0', flexGrow: 1 }}>
+                  {item.excerpt}
+                </p>
+                <Link
+                  to={`/noticias/${item.slug || item.id}`}
+                  style={{
+                    color: 'var(--ball-yellow)',
+                    fontSize: '0.84rem',
+                    fontWeight: '700',
+                    textDecoration: 'none',
+                    marginTop: 'auto'
+                  }}
+                >
+                  Leer nota completa →
+                </Link>
+              </div>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      {/* SECCIÓN DE CONTENIDO EDITORIAL Y GUÍA DEL CIRCUITO */}
       <section className="static-about-section" style={{ 
-        padding: '60px 20px', 
-        maxWidth: '800px', 
+        padding: '45px 20px 60px', 
+        maxWidth: '900px', 
         margin: '0 auto', 
         color: '#ccc',
         lineHeight: '1.8',
         fontSize: '0.95rem'
       }}>
-        <h2 style={{ color: 'var(--ball-yellow)', marginBottom: '20px', fontSize: '1.5rem' }}>Resultados de Tenis en Vivo y Estadísticas</h2>
+        <h2 style={{ color: 'var(--ball-yellow)', marginBottom: '18px', fontSize: '1.5rem' }}>
+          Cobertura Integral de Tenis en Vivo, Estadísticas y Seguimiento de la Legión Argentina
+        </h2>
         <p style={{ marginBottom: '15px' }}>
-          Bienvenido a <strong>DobleFalta</strong>, tu portal dedicado a la cobertura integral del circuito profesional de tenis. 
-          Aquí encontrarás resultados en tiempo real, cuadros detallados y rankings actualizados de la <strong>ATP (Asociación de Tenistas Profesionales)</strong> y la <strong>WTA (Women's Tennis Association)</strong>.
+          Bienvenido a <strong>DobleFalta</strong>, plataforma especializada en el análisis periodístico y estadístico del circuito mundial de tenis. Nuestro portal combina el seguimiento en tiempo real de todos los certámenes de la <strong>ATP (Asociación de Tenistas Profesionales)</strong> y la <strong>WTA (Women's Tennis Association)</strong> con crónicas diarias dedicadas a los representantes argentinos en cada rincón del planeta.
         </p>
         <p style={{ marginBottom: '15px' }}>
-          Nuestro sistema se sincroniza constantemente para ofrecerte los marcadores minuto a minuto de los eventos más importantes del año, desde los <strong>Grand Slams</strong> (Australian Open, Roland Garros, Wimbledon y US Open) hasta los torneos <strong>Masters 1000</strong>, 500 y 250. 
+          A través de nuestro filtro exclusivo <strong>🇦🇷 ARG</strong>, cualquier aficionado puede identificar al instante los encuentros programados, en juego y finalizados de tenistas como Francisco Cerúndolo, Sebastián Báez, Tomás Martín Etcheverry, Mariano Navone, Facundo Díaz Acosta, Camilo Ugo Carabelli, Federico Coria, Nadia Podoroska, María Lourdes Carlé, Julia Riera y Solana Sierra, tanto en los torneos de élite como en la gira sudamericana del <strong>ATP Challenger Tour</strong>.
         </p>
         <p style={{ marginBottom: '25px' }}>
-          Además, brindamos un seguimiento especial a los tenistas argentinos y latinoamericanos en el circuito <strong>Challenger</strong>, asegurando que la comunidad tenga acceso a información precisa sobre el desarrollo del deporte blanco a nivel global.
+          Cada ficha de partido ofrece el desglose punto a punto, porcentajes de efectividad con el primer y segundo servicio, oportunidades de quiebre (<em>break points</em>) convertidas, historial de enfrentamientos previos (<em>Head-to-Head</em>) y la proyección matemática directa en el <Link to="/ranking/en-vivo" style={{ color: 'var(--ball-yellow)' }}>Ranking ATP y WTA en Vivo</Link>.
         </p>
 
-        <h3 style={{ color: 'var(--ball-yellow)', marginBottom: '15px', fontSize: '1.2rem' }}>Guía de Categorías de Torneos</h3>
-        <ul style={{ listStyle: 'none', padding: 0, fontSize: '0.9rem' }}>
+        <h3 style={{ color: 'var(--ball-yellow)', marginBottom: '15px', fontSize: '1.25rem' }}>
+          Estructura y Jerarquía de los Torneos Profesionales
+        </h3>
+        <ul style={{ listStyle: 'none', padding: 0, fontSize: '0.92rem' }}>
           <li style={{ marginBottom: '15px' }}>
-            <strong>• Grand Slams:</strong> Los cuatro torneos más importantes (Australia, Roland Garros, Wimbledon, US Open). Otorgan 2000 puntos y se juegan a 5 sets en hombres.
+            <strong>• Grand Slams (2.000 puntos):</strong> Los cuatro monumentos históricos del tenis mundial: <em>Australian Open</em> (cemento en Melbourne), <em>Roland Garros</em> (polvo de ladrillo en París), <em>Wimbledon</em> (césped natural en Londres) y <em>US Open</em> (cemento en Nueva York). Con cuadros principales de 128 singlistas y partidos al mejor de cinco sets en la rama masculina, consagran la máxima gloria deportiva.
           </li>
           <li style={{ marginBottom: '15px' }}>
-            <strong>• Masters 1000:</strong> Nueve torneos de elite que siguen en importancia a los Slams. Clave para el ranking mundial.
+            <strong>• ATP Masters 1000 y WTA 1000 (1.000 puntos):</strong> Nueve citas obligatorias del calendario masculino (Indian Wells, Miami, Montecarlo, Madrid, Roma, Canadá, Cincinnati, Shanghái y París-Bercy) donde se reúnen sin excepción las mejores raquetas del ranking mundial.
           </li>
           <li style={{ marginBottom: '15px' }}>
-            <strong>• ATP 500 / 250:</strong> Torneos regulares del circuito donde los jugadores suman puntos semana a semana.
+            <strong>• ATP 500 y ATP 250:</strong> El corazón competitivo de cada semana, incluyendo paradas emblemáticas de nuestra región como el <strong>Argentina Open</strong> en el Buenos Aires Lawn Tennis Club, el Río Open en Brasil y el Abierto de Santiago.
           </li>
-          <li style={{ marginBottom: '10px' }}>
-            <strong>• Challenger Tour:</strong> El "semillero" del tenis. Aquí es donde los jugadores argentinos suelen dar el salto al Top 100 mundial.
+          <li style={{ marginBottom: '15px' }}>
+            <strong>• ATP Challenger Tour e ITF World Tennis Tour:</strong> El verdadero semillero del tenis profesional. Con categorías Challenger 50, 75, 100, 125 y 175, es el circuito donde los jugadores jóvenes y los tenistas ubicados entre el puesto 80 y 300 construyen su ascenso hacia el Top 100.
           </li>
         </ul>
+
+        <div style={{
+          marginTop: '28px',
+          padding: '18px 20px',
+          background: 'rgba(255,255,255,0.03)',
+          borderRadius: '10px',
+          border: '1px solid rgba(255,255,255,0.07)'
+        }}>
+          <h4 style={{ color: '#fff', margin: '0 0 10px 0', fontSize: '1.05rem' }}>
+            Guías e Informes Especiales de DobleFalta
+          </h4>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', fontSize: '0.88rem' }}>
+            <Link to="/noticias/como-funciona-sistema-puntos-ranking-atp" style={{ color: 'var(--ball-yellow)' }}>• Cómo funciona el Ranking ATP</Link>
+            <Link to="/noticias/guillermo-vilas-legado-historia-tenis-argentino" style={{ color: 'var(--ball-yellow)' }}>• El legado de Guillermo Vilas</Link>
+            <Link to="/noticias/copa-davis-2016-zagreb-hazana-historica-argentina" style={{ color: 'var(--ball-yellow)' }}>• La hazaña de la Copa Davis 2016</Link>
+            <Link to="/noticias/superficies-tenis-diferencias-estrategia-rebote" style={{ color: 'var(--ball-yellow)' }}>• Física y táctica de las superficies</Link>
+            <Link to="/noticias/circuito-challenger-sudamerica-semillero-tenis-argentino" style={{ color: 'var(--ball-yellow)' }}>• El circuito Challenger en Sudamérica</Link>
+          </div>
+        </div>
       </section>
     </>
   )

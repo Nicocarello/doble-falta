@@ -10,25 +10,168 @@
     <changefreq>daily</changefreq>
     <priority>0.9</priority>
   </url>
+  <!-- Artículos Editoriales de Fondo e Historia del Tenis Argentino -->
   <url>
     <loc>https://doblefaltatenis.com.ar/noticias/como-funciona-sistema-puntos-ranking-atp</loc>
     <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
+    <priority>0.85</priority>
   </url>
   <url>
     <loc>https://doblefaltatenis.com.ar/noticias/argentinos-circuito-atp-desafio-polvo-ladrillo</loc>
     <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
+    <priority>0.85</priority>
   </url>
   <url>
     <loc>https://doblefaltatenis.com.ar/noticias/superficies-tenis-diferencias-estrategia-rebote</loc>
     <changefreq>weekly</changefreq>
+    <priority>0.85</priority>
+  </url>
+  <url>
+    <loc>https://doblefaltatenis.com.ar/noticias/guillermo-vilas-legado-historia-tenis-argentino</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.85</priority>
+  </url>
+  <url>
+    <loc>https://doblefaltatenis.com.ar/noticias/juan-martin-del-potro-us-open-epopeya-olimpica</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.85</priority>
+  </url>
+  <url>
+    <loc>https://doblefaltatenis.com.ar/noticias/copa-davis-2016-zagreb-hazana-historica-argentina</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.85</priority>
+  </url>
+  <url>
+    <loc>https://doblefaltatenis.com.ar/noticias/gabriela-sabatini-paola-suarez-historia-tenis-femenino-argentino</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.85</priority>
+  </url>
+  <url>
+    <loc>https://doblefaltatenis.com.ar/noticias/circuito-challenger-sudamerica-semillero-tenis-argentino</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.85</priority>
+  </url>
+  <url>
+    <loc>https://doblefaltatenis.com.ar/noticias/historia-argentina-open-buenos-aires-lawn-tennis</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.85</priority>
+  </url>
+  <url>
+    <loc>https://doblefaltatenis.com.ar/noticias/legion-argentina-anos-2000-nalbandian-coria-gaudio-canas</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.85</priority>
+  </url>
+  <url>
+    <loc>https://doblefaltatenis.com.ar/noticias/tactica-tenis-moderno-saque-devolucion-estadisticas</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.85</priority>
+  </url>
+  <url>
+    <loc>https://doblefaltatenis.com.ar/noticias/historia-doblismo-argentino-zeballos-molteni-gonzalez</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.85</priority>
+  </url>
+  <url>
+    <loc>https://doblefaltatenis.com.ar/noticias/preparacion-fisica-mental-tenis-profesional-viajes</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.85</priority>
+  </url>
+  <url>
+    <loc>https://doblefaltatenis.com.ar/noticias/reglamento-tenis-tiebreak-ojo-halcon-coaching</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.85</priority>
+  </url>
+  <url>
+    <loc>https://doblefaltatenis.com.ar/noticias/calendario-atp-wta-estructura-temporada-giras</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.85</priority>
+  </url>
+  <!-- Crónicas Diarias de Tenistas Argentinos -->
+  <url>
+    <loc>https://doblefaltatenis.com.ar/noticias/resumen-argentinos-2026-11-12</loc>
+    <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
+  <url>
+    <loc>https://doblefaltatenis.com.ar/noticias/resumen-argentinos-2026-11-11</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://doblefaltatenis.com.ar/noticias/resumen-argentinos-2026-11-10</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://doblefaltatenis.com.ar/noticias/resumen-argentinos-2026-11-09</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://doblefaltatenis.com.ar/noticias/resumen-argentinos-2026-11-08</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://doblefaltatenis.com.ar/noticias/resumen-argentinos-2026-11-07</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://doblefaltatenis.com.ar/noticias/resumen-argentinos-2026-11-06</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://doblefaltatenis.com.ar/noticias/resumen-argentinos-2026-11-05</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://doblefaltatenis.com.ar/noticias/resumen-argentinos-2026-11-04</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://doblefaltatenis.com.ar/noticias/resumen-argentinos-2026-11-03</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://doblefaltatenis.com.ar/noticias/resumen-argentinos-2026-11-02</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://doblefaltatenis.com.ar/noticias/resumen-argentinos-2026-11-01</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://doblefaltatenis.com.ar/noticias/resumen-argentinos-2026-10-31</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://doblefaltatenis.com.ar/noticias/resumen-argentinos-2026-10-30</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://doblefaltatenis.com.ar/noticias/resumen-argentinos-2026-10-29</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <!-- Secciones Principales -->
   <url>
     <loc>https://doblefaltatenis.com.ar/ranking</loc>
     <changefreq>daily</changefreq>
     <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://doblefaltatenis.com.ar/ranking/en-vivo</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.85</priority>
   </url>
   <url>
     <loc>https://doblefaltatenis.com.ar/comunidad</loc>
@@ -51,6 +194,16 @@
     <priority>0.7</priority>
   </url>
   <url>
+    <loc>https://doblefaltatenis.com.ar/juegos/racha-h2h</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://doblefaltatenis.com.ar/juegos/tenisdle</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
     <loc>https://doblefaltatenis.com.ar/category/ATP%201000</loc>
     <changefreq>daily</changefreq>
     <priority>0.7</priority>
@@ -68,7 +221,7 @@
   <url>
     <loc>https://doblefaltatenis.com.ar/about</loc>
     <changefreq>monthly</changefreq>
-    <priority>0.5</priority>
+    <priority>0.6</priority>
   </url>
   <url>
     <loc>https://doblefaltatenis.com.ar/contact</loc>
@@ -78,11 +231,11 @@
   <url>
     <loc>https://doblefaltatenis.com.ar/privacy</loc>
     <changefreq>monthly</changefreq>
-    <priority>0.3</priority>
+    <priority>0.4</priority>
   </url>
   <url>
     <loc>https://doblefaltatenis.com.ar/terms</loc>
     <changefreq>monthly</changefreq>
-    <priority>0.3</priority>
+    <priority>0.4</priority>
   </url>
 </urlset>

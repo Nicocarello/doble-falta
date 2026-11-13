@@ -1,15 +1,14 @@
 import React, { useEffect, useState } from 'react';
-import { useParams, Link, useNavigate } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom';
 import { db } from '../services/firebase';
-import { doc, getDoc, collection, getDocs, query, limit } from 'firebase/firestore';
-import { Calendar, Clock, ArrowLeft, Tag, Share2, User } from 'lucide-react';
+import { doc, getDoc, collection, getDocs } from 'firebase/firestore';
+import { Calendar, Clock, ArrowLeft, User, ArrowRight } from 'lucide-react';
 import SEO from '../components/common/SEO';
 import AdBlock from '../components/common/AdBlock';
-import { SEED_NEWS } from './NewsList';
+import { SEED_NEWS } from '../data/editorialArticles';
 
 const NewsDetail = () => {
   const { slug } = useParams();
-  const navigate = useNavigate();
   const [article, setArticle] = useState(null);
   const [loading, setLoading] = useState(true);
   const [related, setRelated] = useState([]);
@@ -20,10 +19,12 @@ const NewsDetail = () => {
     const fetchArticle = async () => {
       setLoading(true);
       try {
-        // 1. Primero chequear en SEED_NEWS
+        // 1. Buscar primero en SEED_NEWS
         const localMatch = SEED_NEWS.find(a => a.slug === slug || a.id === slug);
         if (localMatch) {
           setArticle(localMatch);
+          const others = SEED_NEWS.filter(a => a.slug !== slug).slice(0, 3);
+          setRelated(others);
           setLoading(false);
           return;
         }
@@ -35,7 +36,6 @@ const NewsDetail = () => {
         if (docSnap.exists()) {
           setArticle({ id: docSnap.id, ...docSnap.data() });
         } else {
-          // Intentar buscar por campo slug
           const newsColl = collection(db, 'news');
           const snap = await getDocs(newsColl);
           const found = snap.docs.find(d => d.data().slug === slug);
@@ -45,6 +45,9 @@ const NewsDetail = () => {
             setArticle(null);
           }
         }
+
+        // Artículos relacionados de lectura profunda
+        setRelated(SEED_NEWS.slice(0, 3));
       } catch (err) {
         console.error("Error fetching article:", err);
       } finally {
@@ -58,7 +61,7 @@ const NewsDetail = () => {
   if (loading) {
     return (
       <div style={{ padding: '60px 20px', textAlign: 'center', color: '#888' }}>
-        <p>Cargando artículo...</p>
+        <p>Cargando crónica...</p>
       </div>
     );
   }
@@ -75,12 +78,34 @@ const NewsDetail = () => {
     );
   }
 
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "NewsArticle",
+    "headline": article.title,
+    "description": article.excerpt,
+    "image": article.imageUrl ? [article.imageUrl] : [],
+    "datePublished": article.publishedAt,
+    "author": [{
+      "@type": "Organization",
+      "name": article.author || "Redacción DobleFalta",
+      "url": "https://doblefaltatenis.com.ar/about"
+    }],
+    "publisher": {
+      "@type": "Organization",
+      "name": "DobleFalta",
+      "url": "https://doblefaltatenis.com.ar"
+    }
+  };
+
   return (
-    <article className="news-detail" style={{ padding: '25px 20px', maxWidth: '820px', margin: '0 auto', color: '#fff', lineHeight: '1.8' }}>
+    <article className="news-detail" style={{ padding: '25px 20px', maxWidth: '840px', margin: '0 auto', color: '#fff', lineHeight: '1.8' }}>
       <SEO
         title={`${article.title} - DobleFalta`}
         description={article.excerpt}
         image={article.imageUrl}
+        canonicalUrl={`/noticias/${article.slug || article.id}`}
+        type="article"
+        schema={jsonLd}
       />
 
       <nav style={{ marginBottom: '25px' }}>
@@ -96,7 +121,7 @@ const NewsDetail = () => {
             fontWeight: '600'
           }}
         >
-          <ArrowLeft size={16} /> Volver a Noticias
+          <ArrowLeft size={16} /> Volver a Noticias y Crónicas
         </Link>
       </nav>
 
@@ -110,15 +135,15 @@ const NewsDetail = () => {
             fontSize: '0.78rem',
             fontWeight: '700'
           }}>
-            {article.category || 'Actualidad'}
+            {article.category || 'Tenis Argentino'}
           </span>
         </div>
 
-        <h1 style={{ fontSize: '2.1rem', lineHeight: '1.3', margin: '0 0 16px 0', color: '#fff' }}>
+        <h1 style={{ fontSize: '2.05rem', lineHeight: '1.3', margin: '0 0 16px 0', color: '#fff' }}>
           {article.title}
         </h1>
 
-        <p style={{ fontSize: '1.15rem', color: '#bbb', lineHeight: '1.6', margin: '0 0 20px 0', fontStyle: 'italic' }}>
+        <p style={{ fontSize: '1.12rem', color: '#bbb', lineHeight: '1.6', margin: '0 0 20px 0', fontStyle: 'italic' }}>
           {article.excerpt}
         </p>
 
@@ -161,7 +186,7 @@ const NewsDetail = () => {
         className="article-body"
         style={{
           fontSize: '1.05rem',
-          color: '#d6d6d6',
+          color: '#dedede',
           lineHeight: '1.85'
         }}
         dangerouslySetInnerHTML={{ __html: article.content }}
@@ -172,8 +197,48 @@ const NewsDetail = () => {
         <AdBlock slot="" />
       </div>
 
+      {/* Lecturas Recomendadas */}
+      {related.length > 0 && (
+        <section style={{ marginTop: '45px', paddingTop: '30px', borderTop: '1px solid rgba(255,255,255,0.1)' }}>
+          <h3 style={{ color: 'var(--ball-yellow)', fontSize: '1.3rem', marginBottom: '20px' }}>
+            Lecturas Recomendadas en DobleFalta
+          </h3>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(230px, 1fr))', gap: '18px' }}>
+            {related.map(rel => (
+              <Link
+                key={rel.slug}
+                to={`/noticias/${rel.slug}`}
+                style={{
+                  background: 'rgba(255,255,255,0.03)',
+                  border: '1px solid rgba(255,255,255,0.08)',
+                  borderRadius: '10px',
+                  padding: '16px',
+                  textDecoration: 'none',
+                  color: '#fff',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'space-between'
+                }}
+              >
+                <div>
+                  <span style={{ fontSize: '0.72rem', color: 'var(--ball-yellow)', fontWeight: '700', textTransform: 'uppercase' }}>
+                    {rel.category}
+                  </span>
+                  <h4 style={{ fontSize: '0.98rem', lineHeight: '1.4', margin: '8px 0 10px 0', color: '#fff' }}>
+                    {rel.title}
+                  </h4>
+                </div>
+                <span style={{ fontSize: '0.82rem', color: 'var(--ball-yellow)', display: 'inline-flex', alignItems: 'center', gap: '4px', fontWeight: '600' }}>
+                  Leer artículo <ArrowRight size={14} />
+                </span>
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
+
       <footer style={{
-        marginTop: '50px',
+        marginTop: '40px',
         paddingTop: '25px',
         borderTop: '1px solid rgba(255,255,255,0.1)',
         display: 'flex',
@@ -191,7 +256,7 @@ const NewsDetail = () => {
             fontSize: '0.95rem'
           }}
         >
-          ← Ver más artículos de DobleFalta
+          ← Ver todas las noticias y crónicas
         </Link>
         <div style={{ color: '#888', fontSize: '0.82rem' }}>
           DobleFalta © {new Date().getFullYear()} • Periodismo y estadísticas de tenis
@@ -202,4 +267,3 @@ const NewsDetail = () => {
 };
 
 export default NewsDetail;
-
