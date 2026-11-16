@@ -4,6 +4,7 @@ import { fileURLToPath } from 'url';
 import { initializeApp } from 'firebase/app';
 import { getFirestore, collection, getDocs } from 'firebase/firestore';
 import { SEED_NEWS } from '../src/data/editorialArticles.js';
+import { MASTER_TOURNAMENTS } from '../src/constants/tennis.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -163,10 +164,43 @@ function buildNewsIndexStaticHtml(articles) {
   `;
 }
 
+function buildTournamentsStaticHtml() {
+  const categories = ['Slams', 'ATP 1000', 'ATP 500', 'ATP 250'];
+  const sectionsHtml = categories.map(cat => {
+    const list = MASTER_TOURNAMENTS[cat] || [];
+    const items = list.map(t => `
+      <li>
+        <a href="/tournament/${encodeURIComponent(cat)}/${t.id}" style="color: #c8ff00; font-weight: 700;">
+          ${escapeHtml(t.name)}
+        </a> — ${escapeHtml(t.city)} (${escapeHtml(t.surface)}, ${escapeHtml(t.duration)})
+      </li>
+    `).join('\n');
+    return `
+      <section style="margin-bottom: 24px;">
+        <h2 style="color: #c8ff00; font-size: 1.4rem;">${escapeHtml(cat === 'Slams' ? 'Grand Slams' : cat)}</h2>
+        <ul>${items}</ul>
+      </section>
+    `;
+  }).join('\n');
+
+  return `
+    <div style="padding: 24px; max-width: 960px; margin: 0 auto; font-family: system-ui, -apple-system, sans-serif; color: #f0f0f0; background-color: #121417; line-height: 1.7;">
+      <header style="margin-bottom: 24px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 16px;">
+        <h1 style="color: #c8ff00; font-size: 2rem; margin: 0 0 10px 0;">Calendario y Directorio de Torneos ATP, Grand Slams y Challenger</h1>
+        <p style="color: #cccccc; margin: 0;">Guía completa de todos los torneos oficiales del circuito profesional de tenis: sedes, superficies, fechas y campeones históricos.</p>
+      </header>
+      <main>
+        ${sectionsHtml}
+      </main>
+    </div>
+  `;
+}
+
 function generateSitemapXml(articles) {
   const staticUrls = [
     { loc: '/', changefreq: 'daily', priority: '1.0' },
     { loc: '/noticias', changefreq: 'daily', priority: '0.9' },
+    { loc: '/tournaments', changefreq: 'weekly', priority: '0.85' },
     { loc: '/ranking', changefreq: 'daily', priority: '0.9' },
     { loc: '/ranking/en-vivo', changefreq: 'daily', priority: '0.85' },
     { loc: '/comunidad', changefreq: 'daily', priority: '0.8' },
@@ -222,6 +256,17 @@ async function runPrerender() {
     rootInnerHtml: buildNewsIndexStaticHtml(articles)
   });
   fs.writeFileSync(path.join(newsIndexDir, 'index.html'), newsIndexHtml, 'utf-8');
+
+  // 1b. Generar dist/tournaments/index.html (Evita Soft 404 en Google Search Console)
+  const tournamentsDir = path.join(DIST_DIR, 'tournaments');
+  fs.mkdirSync(tournamentsDir, { recursive: true });
+  const tournamentsHtml = injectPageIntoTemplate(baseHtml, {
+    title: 'Calendario y Directorio de Torneos ATP, Grand Slams y Challenger - DobleFalta',
+    description: 'Directorio completo de torneos oficiales de tenis: los cuatro Grand Slams, los nueve Masters 1000, torneos ATP 500, ATP 250 y la gira Challenger en vivo.',
+    canonicalPath: '/tournaments',
+    rootInnerHtml: buildTournamentsStaticHtml()
+  });
+  fs.writeFileSync(path.join(tournamentsDir, 'index.html'), tournamentsHtml, 'utf-8');
 
   // 2. Generar dist/noticias/<slug>/index.html para cada artículo
   let count = 0;

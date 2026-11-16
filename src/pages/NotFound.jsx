@@ -1,12 +1,9 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { Helmet } from 'react-helmet-async';
 import { Search, Home, Trophy } from 'lucide-react';
 
 const NotFound = () => {
-    React.useEffect(() => {
-        document.title = 'Página no encontrada - DobleFalta';
-    }, []);
-
     return (
         <div style={{ 
             padding: '120px 20px', 
@@ -18,6 +15,10 @@ const NotFound = () => {
             justifyContent: 'center',
             alignItems: 'center'
         }}>
+            <Helmet>
+                <title>404 - Página no encontrada | DobleFalta</title>
+                <meta name="robots" content="noindex, nofollow" />
+            </Helmet>
             <div style={{ 
                 background: 'rgba(255,255,255,0.05)', 
                 padding: '40px', 
