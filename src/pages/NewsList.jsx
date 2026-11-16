@@ -249,9 +249,36 @@ const NewsList = () => {
         <p style={{ fontSize: '0.94rem', marginBottom: '12px' }}>
           En la redacción de <strong>DobleFalta</strong> realizamos un seguimiento diario exhaustivo de todos los representantes argentinos que compiten alrededor del mundo, abarcando desde los cuadros principales de <strong>Grand Slam y Masters 1000</strong> hasta las etapas decisivas del <strong>ATP Challenger Tour</strong> y los torneos profesionales de la <strong>ITF</strong>.
         </p>
-        <p style={{ fontSize: '0.94rem', margin: 0 }}>
+        <p style={{ fontSize: '0.94rem', marginBottom: '18px' }}>
           Además de nuestras crónicas diarias de resultados, nuestra hemeroteca reúne guías técnicas sobre el funcionamiento matemático del ranking ATP y WTA, análisis biomecánicos sobre la influencia de cada superficie y semblanzas históricas de las grandes leyendas que forjaron la identidad del tenis nacional.
         </p>
+
+        {/* Índice completo de enlaces internos para garantizar rastreo e indexación profunda (SEO) */}
+        <div style={{ borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: '16px' }}>
+          <h3 style={{ color: '#fff', fontSize: '1rem', margin: '0 0 10px 0' }}>
+            Índice de Guías, Historia y Crónicas Recientes
+          </h3>
+          <ul style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))',
+            gap: '8px 18px',
+            listStyle: 'none',
+            padding: 0,
+            margin: 0,
+            fontSize: '0.84rem'
+          }}>
+            {articles.map(item => (
+              <li key={`idx-${item.slug || item.id}`}>
+                <Link
+                  to={`/noticias/${item.slug || item.id}`}
+                  style={{ color: 'var(--ball-yellow)', textDecoration: 'none' }}
+                >
+                  • {item.title}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </div>
       </section>
 
       <AdBlock slot="" />
