@@ -7,7 +7,7 @@ import fetch from 'node-fetch';
  */
 
 // API Key de Tenis (de src/services/tennisApi.js)
-const TENNIS_API_KEY = process.env.TENNIS_API_KEY || '7ae1bf3cbb989fe80c18917c0ba4ff9096c64a17eb4031cfec43dfee1be3d4f3';
+const TENNIS_API_KEY = process.env.TENNIS_API_KEY || 'fe9048681f0c0f8b24d25ef4b97e18ea428e443e1ad866a4ffdfc96bdc9e73b0';
 const TENNIS_API_URL = 'https://api.api-tennis.com/tennis/';
 
 // Configuración de Twitter (vía Variable de Entorno)

@@ -1,6 +1,6 @@
 // NOTA: Se está llamando directamente a la API externa desde el frontend porque las Cloud Functions
 // requieren subir el proyecto al Plan Blaze de Firebase.
-const API_KEY = '7ae1bf3cbb989fe80c18917c0ba4ff9096c64a17eb4031cfec43dfee1be3d4f3'
+const API_KEY = 'fe9048681f0c0f8b24d25ef4b97e18ea428e443e1ad866a4ffdfc96bdc9e73b0'
 const API_URL = 'https://api.api-tennis.com/tennis/'
 
 export { API_KEY, API_URL }
