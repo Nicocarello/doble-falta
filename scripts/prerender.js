@@ -215,6 +215,176 @@ function buildTournamentsStaticHtml() {
   `;
 }
 
+function buildSectionStaticHtml({ heading, subtitle, paragraphs = [], listItems = [], extraLinks = [] }) {
+  const pHtml = paragraphs.map(p => `<p style="color: #cccccc; margin-bottom: 14px;">${p}</p>`).join('\n');
+  const liHtml = listItems.length > 0
+    ? `<ul style="margin-bottom: 20px; color: #cccccc;">${listItems.map(li => `<li style="margin-bottom: 8px;">${li}</li>`).join('\n')}</ul>`
+    : '';
+  const linksHtml = extraLinks.length > 0
+    ? `<nav style="margin-top: 24px; display: flex; gap: 14px; flex-wrap: wrap;">${extraLinks.map(l => `<a href="${l.href}" style="color: #c8ff00; text-decoration: underline;">${escapeHtml(l.label)}</a>`).join('\n')}</nav>`
+    : '';
+
+  return `
+    <div style="padding: 24px; max-width: 920px; margin: 0 auto; font-family: system-ui, -apple-system, sans-serif; color: #f0f0f0; background-color: #121417; line-height: 1.75;">
+      <nav style="margin-bottom: 20px; display: flex; gap: 14px; flex-wrap: wrap;">
+        <a href="/" style="color: #c8ff00;">Inicio</a>
+        <a href="/noticias" style="color: #c8ff00;">Noticias y Crónicas</a>
+        <a href="/ranking" style="color: #c8ff00;">Ranking ATP/WTA</a>
+        <a href="/ranking/en-vivo" style="color: #c8ff00;">Ranking en Vivo</a>
+        <a href="/tournaments" style="color: #c8ff00;">Torneos</a>
+        <a href="/juegos" style="color: #c8ff00;">Juegos</a>
+      </nav>
+      <header style="margin-bottom: 24px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 16px;">
+        <h1 style="color: #c8ff00; font-size: 2rem; margin: 0 0 10px 0;">${escapeHtml(heading)}</h1>
+        <p style="color: #cccccc; margin: 0; font-size: 1.05rem;">${escapeHtml(subtitle)}</p>
+      </header>
+      <main>
+        ${pHtml}
+        ${liHtml}
+        ${linksHtml}
+      </main>
+    </div>
+  `;
+}
+
+const STATIC_SECTION_PAGES = [
+  {
+    path: '/ranking',
+    title: 'Ranking Mundial ATP y WTA Actualizado - DobleFalta',
+    description: 'Consulta el Ranking Mundial ATP y WTA actualizado semana a semana, con filtro exclusivo de tenistas argentinos, puntos oficiales y movimientos.',
+    heading: 'Ranking Mundial ATP y WTA Oficial',
+    subtitle: 'Clasificación actualizada con los mejores jugadores y jugadoras del circuito profesional y seguimiento de los tenistas argentinos.',
+    paragraphs: [
+      'El ranking oficial de la ATP y la WTA opera bajo un sistema acumulativo rodante de 52 semanas. Cada lunes las posiciones se actualizan descontando los puntos defendidos de la edición anterior e incorporando los obtenidos en los últimos certámenes.',
+      'La sumatoria de cada tenista se calcula tomando los mejores 19 resultados en los cuatro Grand Slams (2.000 puntos al campeón), los nueve Masters 1000 (1.000 puntos), los torneos ATP 500, ATP 250 y el circuito Challenger.'
+    ],
+    extraLinks: [
+      { href: '/ranking/en-vivo', label: 'Ver Ranking ATP En Vivo (Proyección Semanal)' },
+      { href: '/noticias/como-funciona-sistema-puntos-ranking-atp', label: 'Guía completa del sistema de puntos ATP' }
+    ]
+  },
+  {
+    path: '/ranking/en-vivo',
+    title: 'Ranking ATP En Vivo (Live Ranking) - DobleFalta',
+    description: 'Ranking ATP en vivo proyectado partido a partido. Seguí los puntos ganados, los puntos defendidos de la temporada anterior y el ascenso de los argentinos.',
+    heading: 'Ranking ATP En Vivo y Proyección Semanal',
+    subtitle: 'Cálculo proyectado en tiempo real según los resultados parciales de la semana en Grand Slams, Masters 1000, ATP 500/250 y Challengers.',
+    paragraphs: [
+      'A diferencia de la tabla oficial que se publica cada lunes, el Ranking ATP En Vivo refleja cómo quedaría el escalafón mundial si los torneos de la semana terminaran hoy.',
+      'Nuestra proyección aplica la fórmula oficial: Puntos en Vivo = Puntos Oficiales − Puntos Defendidos de la misma semana del año anterior + Puntos Ganados por la ronda alcanzada en el torneo en curso.'
+    ],
+    listItems: [
+      '<strong>Puntos Ganados:</strong> Se asignan automáticamente según la instancia alcanzada y la jerarquía del torneo.',
+      '<strong>Puntos a Defender:</strong> Descuento de las unidades sumadas 52 semanas atrás.',
+      '<strong>Filtro 🇦🇷 ARG:</strong> Seguimiento instantáneo de los tenistas argentinos en movimiento durante la gira.'
+    ],
+    extraLinks: [
+      { href: '/ranking', label: 'Ver Ranking Oficial ATP y WTA' },
+      { href: '/noticias/como-funciona-sistema-puntos-ranking-atp', label: 'Cómo funciona la defensa de puntos' }
+    ]
+  },
+  {
+    path: '/juegos',
+    title: 'Juegos y Trivias Diarias de Tenis - DobleFalta',
+    description: 'Desafíos interactivos diarios para fanáticos del tenis: Adivina el Tenista, Top 10 Histórico ATP desde 1990, Racha Head-to-Head y Tenisdle.',
+    heading: 'Juegos y Desafíos Diarios de Tenis',
+    subtitle: 'Poné a prueba tu conocimiento sobre la historia del tenis, el ranking ATP/WTA y las grandes rivalidades del circuito.',
+    listItems: [
+      '<a href="/juegos/adivina" style="color: #c8ff00;"><strong>Adivina el Tenista:</strong></a> Descubrí al jugador oculto del día con pistas de nacionalidad, mejor ranking y títulos.',
+      '<a href="/juegos/top10" style="color: #c8ff00;"><strong>Top 10 Histórico:</strong></a> Completá los 10 mejores jugadores de una semana histórica del ranking ATP desde 1990.',
+      '<a href="/juegos/racha-h2h" style="color: #c8ff00;"><strong>Racha Head-to-Head (H2H):</strong></a> Elegí quién domina el historial oficial entre dos figuras del circuito.',
+      '<a href="/juegos/tenisdle" style="color: #c8ff00;"><strong>Tenisdle:</strong></a> Adiviná el apellido del tenista del día en hasta seis intentos.'
+    ]
+  },
+  {
+    path: '/juegos/adivina',
+    title: 'Adivina el Tenista del Día - Juegos DobleFalta',
+    description: 'Juego diario de tenis: descubrí al jugador o jugadora oculta a través de cinco pistas progresivas sobre su carrera y títulos.',
+    heading: 'Adivina el Tenista del Día',
+    subtitle: 'Nuevo desafío diario cada medianoche (hora de Argentina) con protagonistas históricos y actuales del circuito ATP y WTA.',
+    paragraphs: ['En cada intento fallido se desbloquea una nueva pista: país de origen, mano hábil, mejor posición en el ranking mundial, cantidad de títulos de Grand Slam y participaciones destacadas.'],
+    extraLinks: [{ href: '/juegos', label: '← Volver a todos los juegos' }]
+  },
+  {
+    path: '/juegos/top10',
+    title: 'Top 10 Histórico del Ranking ATP - Juegos DobleFalta',
+    description: 'Desafío de memoria tenística: completá el Top 10 del ranking ATP de una semana histórica entre 1990 y la actualidad.',
+    heading: 'Top 10 Histórico del Ranking ATP',
+    subtitle: 'Viajá a una semana puntual del circuito masculino desde 1990 hasta hoy y acertá a los diez mejores jugadores del escalafón.',
+    paragraphs: ['Recordá las épocas doradas de Sampras, Agassi, Federer, Nadal, Djokovic, Vilas, Coria, Gaudio, Nalbandian y Del Potro en este desafío contrarreloj o sin reloj.'],
+    extraLinks: [{ href: '/juegos', label: '← Volver a todos los juegos' }]
+  },
+  {
+    path: '/juegos/racha-h2h',
+    title: 'Racha Head-to-Head (H2H) - Juegos DobleFalta',
+    description: '¿Quién lidera el historial oficial frente a frente? Poné a prueba tu racha comparando enfrentamientos directos en ATP y WTA.',
+    heading: 'Racha Head-to-Head (H2H)',
+    subtitle: 'Compará dos jugadores del circuito profesional y adiviná quién domina el historial oficial de partidos disputados entre ambos.',
+    paragraphs: ['Utilizando los registros oficiales de enfrentamientos directos de la ATP y la WTA, cada acierto extiende tu racha y presenta un nuevo retador.'],
+    extraLinks: [{ href: '/h2h', label: 'Ir al comparador completo H2H' }]
+  },
+  {
+    path: '/juegos/tenisdle',
+    title: 'Tenisdle: Wordle Diario de Tenis - DobleFalta',
+    description: 'Juego diario estilo Wordle en español para adivinar apellidos de tenistas profesionales en seis intentos.',
+    heading: 'Tenisdle: El Desafío Diario de Palabras de Tenis',
+    subtitle: 'Adiviná el apellido oculto de una figura del tenis mundial en un máximo de seis intentos con pistas por color de letra.',
+    paragraphs: ['Verde indica letra correcta en posición exacta; amarillo indica que la letra pertenece al apellido en otra posición. Un nuevo jugador se habilita cada día.'],
+    extraLinks: [{ href: '/juegos', label: '← Volver a todos los juegos' }]
+  },
+  {
+    path: '/h2h',
+    title: 'Historial Frente a Frente (Head to Head) ATP y WTA - DobleFalta',
+    description: 'Comparador oficial Head to Head (H2H): revisá todos los enfrentamientos previos, victorias, derrotas y marcadores entre cualquier pareja de tenistas.',
+    heading: 'Comparador Head-to-Head (H2H)',
+    subtitle: 'Consultá el historial completo de enfrentamientos directos entre dos tenistas del circuito ATP o WTA.',
+    paragraphs: ['Buscá cualquier par de jugadores para consultar su balance histórico oficial, desglose de partidos por torneo, superficie y marcadores set por set.']
+  },
+  {
+    path: '/comunidad',
+    title: 'Comunidad y Foro de Debate de Tenis - DobleFalta',
+    description: 'Sumate a los debates de la comunidad de DobleFalta sobre el circuito ATP, WTA, tenistas argentinos, Grand Slams y Challengers.',
+    heading: 'Comunidad y Foro de Debate de Tenis',
+    subtitle: 'Espacio abierto para compartir opiniones, análisis tácticos y seguimiento de los torneos junto a otros aficionados.',
+    paragraphs: ['Participá de los hilos de debate sobre el presente de la Legión Argentina, el circuito Challenger sudamericano y las definiciones de Grand Slam y Masters 1000.']
+  },
+  {
+    path: '/about',
+    title: 'Sobre Nosotros - DobleFalta',
+    description: 'Conocé el equipo detrás de DobleFalta, portal independiente argentino dedicado a resultados en vivo, estadísticas y periodismo de tenis.',
+    heading: 'Sobre DobleFalta',
+    subtitle: 'Plataforma independiente dedicada al seguimiento del circuito profesional de tenis y la cobertura periodística de la Legión Argentina.',
+    paragraphs: [
+      'DobleFalta nació con el objetivo de ofrecer a los aficionados hispanohablantes una herramienta rápida, limpia y completa para seguir marcadores minuto a minuto, estadísticas ATP/WTA, proyecciones de ranking y crónicas diarias.',
+      'Ponemos especial foco en la trayectoria de los jugadores y jugadoras de Argentina y Sudamérica en cada escalón del circuito mundial.'
+    ]
+  },
+  {
+    path: '/contact',
+    title: 'Contacto - DobleFalta',
+    description: 'Contactate con el equipo de DobleFalta para consultas editoriales, sugerencias técnicas o propuestas comerciales.',
+    heading: 'Contacto — DobleFalta',
+    subtitle: 'Canales de comunicación directa con la redacción y soporte técnico del portal.',
+    paragraphs: ['Para sugerencias, reportes técnicos o consultas comerciales, escribinos a doblefaltat@gmail.com. Tiempo estimado de respuesta: 24 a 48 horas hábiles.']
+  },
+  {
+    path: '/privacy',
+    title: 'Política de Privacidad - DobleFalta',
+    description: 'Información transparente sobre privacidad, uso de cookies, Google Analytics y Google AdSense en DobleFalta.',
+    heading: 'Política de Privacidad',
+    subtitle: 'Cómo tratamos los datos técnicos de navegación, almacenamiento local y cookies en doblefaltatenis.com.ar.',
+    paragraphs: ['DobleFalta respeta la privacidad de sus visitantes. No solicitamos registros obligatorios para consultar marcadores ni noticias y detallamos el uso de cookies analíticas y publicitarias de terceros conforme a la normativa vigente.']
+  },
+  {
+    path: '/terms',
+    title: 'Términos y Condiciones de Uso - DobleFalta',
+    description: 'Condiciones generales de uso, propiedad intelectual y exención de responsabilidad informativa de DobleFalta.',
+    heading: 'Términos y Condiciones',
+    subtitle: 'Reglas de uso del sitio, participación en el foro comunitario y carácter informativo de las estadísticas.',
+    paragraphs: ['El acceso a los resultados, rankings, crónicas editoriales y juegos interactivos de DobleFalta es gratuito y de carácter exclusivamente informativo y recreativo.']
+  }
+];
+
 function generateSitemapXml(articles) {
   const staticUrls = [
     { loc: '/', changefreq: 'daily', priority: '1.0' },
@@ -222,6 +392,7 @@ function generateSitemapXml(articles) {
     { loc: '/tournaments', changefreq: 'weekly', priority: '0.85' },
     { loc: '/ranking', changefreq: 'daily', priority: '0.9' },
     { loc: '/ranking/en-vivo', changefreq: 'daily', priority: '0.85' },
+    { loc: '/h2h', changefreq: 'weekly', priority: '0.8' },
     { loc: '/comunidad', changefreq: 'daily', priority: '0.8' },
     { loc: '/juegos', changefreq: 'daily', priority: '0.8' },
     { loc: '/juegos/adivina', changefreq: 'daily', priority: '0.7' },
@@ -287,6 +458,21 @@ async function runPrerender() {
   });
   fs.writeFileSync(path.join(tournamentsDir, 'index.html'), tournamentsHtml, 'utf-8');
 
+  // 1c. Generar páginas estáticas con canonical único para todas las secciones principales
+  for (const sec of STATIC_SECTION_PAGES) {
+    const relPath = sec.path.replace(/^\/+/, '');
+    const secDir = path.join(DIST_DIR, ...relPath.split('/'));
+    fs.mkdirSync(secDir, { recursive: true });
+    const secHtml = injectPageIntoTemplate(baseHtml, {
+      title: sec.title,
+      description: sec.description,
+      canonicalPath: sec.path,
+      rootInnerHtml: buildSectionStaticHtml(sec)
+    });
+    fs.writeFileSync(path.join(secDir, 'index.html'), secHtml, 'utf-8');
+  }
+  console.log(`✅ Prerenderizadas ${STATIC_SECTION_PAGES.length + 2} rutas de secciones principales con canonical propio.`);
+
   // 2. Generar dist/noticias/<slug>/index.html para cada artículo
   let count = 0;
   for (const article of articles) {
@@ -341,7 +527,11 @@ async function runPrerender() {
     </li>
   `).join('\n');
 
-  const updatedHomeHtml = baseHtml.replace(
+  let updatedHomeHtml = baseHtml.replace(
+    '</head>',
+    `  <link rel="canonical" href="${SITE_URL}/" />\n  <meta property="og:url" content="${SITE_URL}/" />\n</head>`
+  );
+  updatedHomeHtml = updatedHomeHtml.replace(
     '</main>',
     `  <section style="margin-bottom: 28px;">
           <h2 style="color: #ffffff; font-size: 1.4rem; margin-bottom: 10px;">Últimas Crónicas del Tenis Argentino y Guías Editoriales</h2>
