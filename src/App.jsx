@@ -5,15 +5,17 @@ import './App.css'
 import { MASTER_TOURNAMENTS } from './constants/tennis'
 import { useTennis } from './context/TennisContext'
 
-// Portada de carga inmediata para optimizar LCP (Core Web Vitals)
+// Portada y rutas clave de noticias/torneos de carga inmediata para evitar flashes de "Cargando..." ante Googlebot
 import Home from './pages/Home'
+import NewsList from './pages/NewsList'
+import NewsDetail from './pages/NewsDetail'
+import TournamentList from './pages/TournamentList'
 import SuggestionModal from './components/SuggestionModal'
 import Footer from './components/common/Footer'
 import CookieConsent from './components/CookieConsent'
 
-// Rutas secundarias con Code-Splitting (React.lazy)
+// Rutas secundarias y juegos pesados con Code-Splitting (React.lazy)
 const MatchDetail = lazy(() => import('./pages/MatchDetail'))
-const TournamentList = lazy(() => import('./pages/TournamentList'))
 const TournamentDetail = lazy(() => import('./pages/TournamentDetail'))
 const Ranking = lazy(() => import('./pages/Ranking'))
 const LiveRanking = lazy(() => import('./pages/LiveRanking'))
@@ -32,8 +34,6 @@ const GameTop10 = lazy(() => import('./pages/GameTop10'))
 const GameH2H = lazy(() => import('./pages/GameH2H'))
 const HeadToHead = lazy(() => import('./pages/HeadToHead'))
 const PlayerDetail = lazy(() => import('./pages/PlayerDetail'))
-const NewsList = lazy(() => import('./pages/NewsList'))
-const NewsDetail = lazy(() => import('./pages/NewsDetail'))
 
 function App() {
   const navigate = useNavigate()

@@ -381,6 +381,7 @@ const Home = () => {
                 <h3 style={{ fontSize: '1.02rem', lineHeight: '1.38', margin: '0 0 10px 0' }}>
                   <Link
                     to={`/noticias/${item.slug || item.id}`}
+                    state={{ article: item }}
                     style={{ color: '#fff', textDecoration: 'none' }}
                   >
                     {item.title}
@@ -391,6 +392,7 @@ const Home = () => {
                 </p>
                 <Link
                   to={`/noticias/${item.slug || item.id}`}
+                  state={{ article: item }}
                   style={{
                     color: 'var(--ball-yellow)',
                     fontSize: '0.84rem',

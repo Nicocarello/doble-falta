@@ -51,7 +51,16 @@ async function fetchAllArticles() {
   return merged;
 }
 
-function injectPageIntoTemplate(baseHtml, { title, description, canonicalPath, ogImage, ogType = 'website', jsonLd = null, rootInnerHtml }) {
+function safeSerializeJson(data) {
+  return JSON.stringify(data)
+    .replace(/</g, '\\u003c')
+    .replace(/>/g, '\\u003e')
+    .replace(/&/g, '\\u0026')
+    .replace(/\u2028/g, '\\u2028')
+    .replace(/\u2029/g, '\\u2029');
+}
+
+function injectPageIntoTemplate(baseHtml, { title, description, canonicalPath, ogImage, ogType = 'website', jsonLd = null, prerenderData = null, rootInnerHtml }) {
   let html = baseHtml;
 
   const fullTitle = escapeHtml(title);
@@ -74,18 +83,28 @@ function injectPageIntoTemplate(baseHtml, { title, description, canonicalPath, o
   html = html.replace(/<meta\s+property="og:image"[\s\S]*?\/>/i, `<meta property="og:image" content="${imageUrl}" />`);
   html = html.replace(/<meta\s+property="og:type"[\s\S]*?\/>/i, `<meta property="og:type" content="${ogType}" />`);
 
-  // Agregar canonical y JSON-LD antes de </head>
+  // Agregar canonical, JSON-LD y datos de hidratación antes de </head>
   let headExtras = `  <link rel="canonical" href="${canonicalUrl}" />\n  <meta property="og:url" content="${canonicalUrl}" />\n`;
   if (jsonLd) {
-    headExtras += `  <script type="application/ld+json">${JSON.stringify(jsonLd)}</script>\n`;
+    headExtras += `  <script type="application/ld+json">${safeSerializeJson(jsonLd)}</script>\n`;
+  }
+  if (prerenderData) {
+    headExtras += `  <script>window.__PRERENDERED_ARTICLE__=${safeSerializeJson(prerenderData)};</script>\n`;
   }
   html = html.replace('</head>', `${headExtras}</head>`);
 
-  // Reemplazar el interior de <div id="root">...</div>
-  html = html.replace(
-    /<div id="root">[\s\S]*?<\/div>\s*<script type="module"/i,
-    `<div id="root">\n${rootInnerHtml}\n  </div>\n  <script type="module"`
-  );
+  // Reemplazar todo el contenido interno de <div id="root">...</div> (Vite mueve <script type="module"> al <head>, por lo que después de #root viene </body>)
+  if (/<div id="root">[\s\S]*?<\/div>\s*<\/body>/i.test(html)) {
+    html = html.replace(
+      /<div id="root">[\s\S]*?<\/div>\s*<\/body>/i,
+      `<div id="root">\n${rootInnerHtml}\n  </div>\n</body>`
+    );
+  } else {
+    html = html.replace(
+      /<div id="root">[\s\S]*?<\/div>\s*<script type="module"/i,
+      `<div id="root">\n${rootInnerHtml}\n  </div>\n  <script type="module"`
+    );
+  }
 
   return html;
 }
@@ -304,6 +323,7 @@ async function runPrerender() {
       ogImage: article.imageUrl,
       ogType: 'article',
       jsonLd,
+      prerenderData: article,
       rootInnerHtml: buildArticleStaticHtml(article, related)
     });
 

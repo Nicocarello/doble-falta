@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useLocation } from 'react-router-dom';
+import { Helmet } from 'react-helmet-async';
 import { db } from '../services/firebase';
 import { doc, getDoc, collection, getDocs } from 'firebase/firestore';
 import { Calendar, Clock, ArrowLeft, User, ArrowRight } from 'lucide-react';
@@ -7,29 +8,44 @@ import SEO from '../components/common/SEO';
 import AdBlock from '../components/common/AdBlock';
 import { SEED_NEWS } from '../data/editorialArticles';
 
+function getInitialArticle(slug, stateArticle) {
+  if (stateArticle && (stateArticle.slug === slug || stateArticle.id === slug)) {
+    return stateArticle;
+  }
+  const localMatch = SEED_NEWS.find(a => a.slug === slug || a.id === slug);
+  if (localMatch) return localMatch;
+
+  if (typeof window !== 'undefined' && window.__PRERENDERED_ARTICLE__) {
+    const pre = window.__PRERENDERED_ARTICLE__;
+    if (pre.slug === slug || pre.id === slug) {
+      return pre;
+    }
+  }
+  return null;
+}
+
 const NewsDetail = () => {
   const { slug } = useParams();
-  const [article, setArticle] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [related, setRelated] = useState([]);
+  const location = useLocation();
+  const initialArticle = getInitialArticle(slug, location.state?.article);
+  const [article, setArticle] = useState(initialArticle);
+  const [loading, setLoading] = useState(!initialArticle);
+  const [related, setRelated] = useState(() => SEED_NEWS.filter(a => a.slug !== slug).slice(0, 3));
 
   useEffect(() => {
     window.scrollTo(0, 0);
 
+    const preloaded = getInitialArticle(slug, location.state?.article);
+    if (preloaded) {
+      setArticle(preloaded);
+      setRelated(SEED_NEWS.filter(a => a.slug !== slug).slice(0, 3));
+      setLoading(false);
+      return;
+    }
+
     const fetchArticle = async () => {
       setLoading(true);
       try {
-        // 1. Buscar primero en SEED_NEWS
-        const localMatch = SEED_NEWS.find(a => a.slug === slug || a.id === slug);
-        if (localMatch) {
-          setArticle(localMatch);
-          const others = SEED_NEWS.filter(a => a.slug !== slug).slice(0, 3);
-          setRelated(others);
-          setLoading(false);
-          return;
-        }
-
-        // 2. Si no está en SEED, buscar en Firestore
         const docRef = doc(db, 'news', slug);
         const docSnap = await getDoc(docRef);
 
@@ -46,7 +62,6 @@ const NewsDetail = () => {
           }
         }
 
-        // Artículos relacionados de lectura profunda
         setRelated(SEED_NEWS.slice(0, 3));
       } catch (err) {
         console.error("Error fetching article:", err);
@@ -56,7 +71,7 @@ const NewsDetail = () => {
     };
 
     fetchArticle();
-  }, [slug]);
+  }, [slug, location.state]);
 
   if (loading) {
     return (
@@ -69,6 +84,10 @@ const NewsDetail = () => {
   if (!article) {
     return (
       <div style={{ padding: '80px 20px', textAlign: 'center', color: '#fff' }}>
+        <Helmet>
+          <title>Artículo no encontrado - DobleFalta</title>
+          <meta name="robots" content="noindex, nofollow" />
+        </Helmet>
         <h2>Artículo no encontrado</h2>
         <p style={{ color: '#888', margin: '15px 0' }}>El artículo que estás buscando no existe o fue movido.</p>
         <Link to="/noticias" style={{ color: 'var(--ball-yellow)', textDecoration: 'underline' }}>

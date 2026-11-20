@@ -161,6 +161,7 @@ const NewsList = () => {
               <h2 style={{ fontSize: '1.18rem', lineHeight: '1.4', margin: '0 0 12px 0', color: '#fff' }}>
                 <Link
                   to={`/noticias/${article.slug || article.id}`}
+                  state={{ article }}
                   style={{ color: 'inherit', textDecoration: 'none' }}
                 >
                   {article.title}
@@ -173,6 +174,7 @@ const NewsList = () => {
 
               <Link
                 to={`/noticias/${article.slug || article.id}`}
+                state={{ article }}
                 style={{
                   display: 'inline-flex',
                   alignItems: 'center',
@@ -271,6 +273,7 @@ const NewsList = () => {
               <li key={`idx-${item.slug || item.id}`}>
                 <Link
                   to={`/noticias/${item.slug || item.id}`}
+                  state={{ article: item }}
                   style={{ color: 'var(--ball-yellow)', textDecoration: 'none' }}
                 >
                   • {item.title}
