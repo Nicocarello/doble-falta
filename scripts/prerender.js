@@ -365,7 +365,7 @@ const STATIC_SECTION_PAGES = [
     description: 'Contactate con el equipo de DobleFalta para consultas editoriales, sugerencias técnicas o propuestas comerciales.',
     heading: 'Contacto — DobleFalta',
     subtitle: 'Canales de comunicación directa con la redacción y soporte técnico del portal.',
-    paragraphs: ['Para sugerencias, reportes técnicos o consultas comerciales, escribinos a doblefaltat@gmail.com. Tiempo estimado de respuesta: 24 a 48 horas hábiles.']
+    paragraphs: ['Para sugerencias, reportes técnicos o consultas comerciales, escribinos a <!--email_off-->doblefaltat@gmail.com<!--/email_off-->. Tiempo estimado de respuesta: 24 a 48 horas hábiles.']
   },
   {
     path: '/privacy',
